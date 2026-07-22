@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gtubn Studio 的网站</title>
+    <!-- Web Logo / Favicon -->
+    <link rel="icon" href="logo1.jpeg" type="image/jpeg">
     <style>
         :root {
             --bg: #0d1117; --panel: #161b22; --border: #21262d;
@@ -29,38 +31,23 @@
         .page { display: none; }
         .page.active { display: block; }
 
-        /* Share */
-        .empty-state { display: flex; flex-direction: column; align-items: center; padding: 60px 0; }
-        .anim-box { position: relative; width: 80px; height: 80px; margin-bottom: 20px; }
-        .pulse {
-            position: absolute; width: 100%; height: 100%;
-            border: 2px solid var(--accent); border-radius: 50%;
-            animation: wave 2.5s infinite ease-out; opacity: 0;
-        }
-        .pulse2 { animation-delay: 1.25s; }
-        .center-icon {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 40px; height: 40px; color: var(--muted); animation: float 4s infinite ease-in-out;
-        }
-        .empty-state p { font-size: 14px; color: var(--muted); }
-        
+        /* 主页 */
+        .home-content { padding: 20px 0; }
+        .home-content h2 { font-size: 22px; font-weight: 600; margin-bottom: 12px; }
+        .home-content p { font-size: 15px; color: var(--muted); line-height: 1.6; }
+
         /* 关于 */
         .about-content { line-height: 1.8; font-size: 14px; }
         .about-content p { margin-bottom: 12px; }
         .about-content span { color: var(--muted); display: inline-block; width: 80px; }
+        .about-img {
+            margin-top: 20px; max-width: 100%; height: auto;
+            border-radius: 8px; border: 1px solid var(--border);
+        }
 
         button {
             background: var(--panel); border: 1px solid var(--border);
             padding: 6px 12px; border-radius: 6px; color: var(--text); cursor: pointer; font-size: 13px;
-        }
-        @keyframes wave {
-            0% { transform: scale(0.4); opacity: 0; }
-            30% { opacity: 0.3; }
-            100% { transform: scale(1.3); opacity: 0; }
-        }
-        @keyframes float {
-            0%, 100% { transform: translate(-50%, -52%); }
-            50% { transform: translate(-50%, -48%); }
         }
     </style>
 </head>
@@ -72,45 +59,42 @@
     </header>
 
     <div class="nav">
-        <a id="nav-share" class="active">Share</a>
+        <a id="nav-home" class="active">主页</a>
         <a id="nav-about">关于</a>
     </div>
 
-    <!-- Share 页 -->
-    <div id="page-share" class="page active">
-        <div class="empty-state">
-            <div class="anim-box">
-                <div class="pulse"></div>
-                <div class="pulse2"></div>
-                <svg class="center-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                </svg>
-            </div>
-            <p>暂无共享文件</p>
+    <!-- 主页 -->
+    <div id="page-home" class="page active">
+        <div class="home-content">
+            <h2>欢迎来到 Gtubn Studio 的网站！</h2>
+            <p>海内存知己，天涯若比邻。</p>
         </div>
     </div>
 
     <!-- 关于 页 -->
     <div id="page-about" class="page">
         <div class="about-content">
-            <p><strong>Gtubn Studio</strong> 是一个专注于数字化效率与极简技术实现的组织。</p>
-            <p><span>支持</span>GitHub Pages</p>
+            <p>这是 Gtubn Studio 的网站。</p>
+            <p>(c) 2026 Gtubn Studio, All Rights Reserved.</p>
+            <p>我们的内容遵循 &lt;/&gt; 开源精神。</p>
+            <p><span>Web 呈现</span>GitHub Pages</p>
+            <img src="logo2.jpeg" alt="Gtubn Studio Logo" class="about-img">
         </div>
     </div>
 
     <script>
-        const btnShare = document.getElementById('nav-share');
+        const btnHome = document.getElementById('nav-home');
         const btnAbout = document.getElementById('nav-about');
-        const pgShare = document.getElementById('page-share');
+        const pgHome = document.getElementById('page-home');
         const pgAbout = document.getElementById('page-about');
 
-        btnShare.addEventListener('click', () => {
-            btnShare.className = 'active'; btnAbout.className = '';
-            pgShare.className = 'page active'; pgAbout.className = 'page';
+        btnHome.addEventListener('click', () => {
+            btnHome.className = 'active'; btnAbout.className = '';
+            pgHome.className = 'page active'; pgAbout.className = 'page';
         });
         btnAbout.addEventListener('click', () => {
-            btnAbout.className = 'active'; btnShare.className = '';
-            pgAbout.className = 'page active'; pgShare.className = 'page';
+            btnAbout.className = 'active'; btnHome.className = '';
+            pgAbout.className = 'page active'; pgHome.className = 'page';
         });
 
         document.getElementById('tog').addEventListener('click', e => {
