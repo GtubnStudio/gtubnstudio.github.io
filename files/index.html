@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>文件列表 - Gtubn Studio</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --panel: rgba(22, 27, 34, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(88, 166, 255, 0.25);
+            --text: #e6edf3;
+            --muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.25);
+            --card-inner: rgba(255, 255, 255, 0.02);
+            --card-inner-border: rgba(255, 255, 255, 0.05);
+            --notice-bg: rgba(88, 166, 255, 0.06);
+            --notice-border: rgba(88, 166, 255, 0.2);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f4f6f8;
+                --panel: rgba(255, 255, 255, 0.75);
+                --border: rgba(0, 0, 0, 0.06);
+                --border-glow: rgba(9, 105, 218, 0.2);
+                --text: #1f2328;
+                --muted: #656d76;
+                --accent: #0969da;
+                --accent-glow: rgba(9, 105, 218, 0.18);
+                --card-inner: rgba(0, 0, 0, 0.02);
+                --card-inner-border: rgba(0, 0, 0, 0.04);
+                --notice-bg: rgba(9, 105, 218, 0.04);
+                --notice-border: rgba(9, 105, 218, 0.15);
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--text);
+            max-width: 840px; margin: 0 auto; padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        h1 { font-size: 20px; font-weight: 700; color: var(--text); }
+
+        .back-btn {
+            color: var(--accent); text-decoration: none; font-size: 14px;
+            display: inline-flex; align-items: center; gap: 4px; font-weight: 500;
+        }
+        .back-btn:hover { text-decoration: underline; }
+
+        .card-box {
+            background: var(--panel);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .file-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .file-item {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--card-inner); border: 1px solid var(--card-inner-border);
+            padding: 12px 16px; border-radius: 12px; transition: all 0.2s ease;
+        }
+
+        .file-item:hover {
+            border-color: var(--border-glow);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-1px);
+        }
+
+        .file-info { display: flex; align-items: center; gap: 10px; font-size: 14px; word-break: break-all; }
+        .file-icon { font-size: 16px; }
+        .file-size { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+        .btn-dl {
+            background: var(--notice-bg); border: 1px solid var(--notice-border);
+            color: var(--accent); padding: 5px 12px; border-radius: 8px;
+            font-size: 12px; font-weight: 600; text-decoration: none;
+            transition: all 0.2s ease; white-space: nowrap; margin-left: 12px;
+        }
+
+        .btn-dl:hover { background: var(--accent); color: #fff; }
+
+        .loading, .empty, .error {
+            text-align: center; color: var(--muted); font-size: 14px; padding: 20px 0;
+        }
+        .error { color: #ff4d4f; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📂 文件资源导览</h1>
+        <a href="/" class="back-btn">← 返回主页</a>
+    </header>
+
+    <main class="card-box">
+        <div id="file-container" class="file-list">
+            <div class="loading">正在读取文件目录...</div>
+        </div>
+    </main>
+
+    <script>
+        // 请在此处修改为你的 GitHub 用户名与仓库名
+        const GITHUB_USER = "Gtubn"; 
+        const GITHUB_REPO = "Gtubn.github.io"; 
+        const TARGET_FOLDER = "files";
+
+        async function loadFiles() {
+            const container = document.getElementById('file-container');
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${TARGET_FOLDER}`;
+
+            try {
+                const res = await fetch(apiUrl);
+                if (!res.ok) throw new Error("无法读取 API");
+                const items = await res.json();
+
+                // 过滤掉当前这个 index.html 页面本身
+                const files = items.filter(item => item.name !== 'index.html');
+
+                if (files.length === 0) {
+                    container.innerHTML = '<div class="empty">目录中暂无文件</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                files.forEach(file => {
+                    const isDir = file.type === 'dir';
+                    const sizeStr = isDir ? '' : `(${(file.size / 1024).toFixed(1)} KB)`;
+                    
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'file-item';
+                    itemEl.innerHTML = `
+                        <div class="file-info">
+                            <span class="file-icon">${isDir ? '📁' : '📄'}</span>
+                            <span>${file.name}</span>
+                            <span class="file-size">${sizeStr}</span>
+                        </div>
+                        <a href="${file.download_url || file.html_url}" 
+                           ${isDir ? '' : 'download'} 
+                           target="_blank" 
+                           class="btn-dl">
+                           ${isDir ? '进入文件夹' : '下载'}
+                        </a>
+                    `;
+                    container.appendChild(itemEl);
+                });
+
+            } catch (err) {
+                container.innerHTML = `<div class="error">读取文件目录失败，请确保配置了正确的 GitHub 用户名/仓库名。</div>`;
+            }
+        }
+
+        loadFiles();
+    </script>
+</body>
+</html>
