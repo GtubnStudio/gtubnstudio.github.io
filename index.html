@@ -514,7 +514,7 @@
             </div>
 
             <div class="section-header">
-                <div class="section-title">文件资源导览</div>
+                <div class="section-title">文件资源导览（暂不可用）</div>
                 <span id="file-status-tag" class="file-status-tag">就绪</span>
                 <button class="action-btn" id="refresh-files-btn">
                     <span class="btn-icon">↻</span>
@@ -619,8 +619,8 @@
     <script>
         // ----------------- GitHub 文件列表配置 -----------------
         const GITHUB_CONFIG = {
-            username: 'GtubnStudio',
-            repo: 'gtubnstudio.github.io',
+            username: '',
+            repo: '',
             path: 'files'
         };
 
@@ -893,7 +893,7 @@
                 })
                 .catch(err => {
                     cachedFileData = [];
-                    container.innerHTML = `<div class="file-status-msg">读取文件目录失败，请确认仓库中存在 files 文件夹。</div>`;
+                    container.innerHTML = `<div class="file-status-msg">读取文件目录失败</div>`;
                     if (statusTag) statusTag.innerText = "同步失败";
                 })
                 .finally(() => {
