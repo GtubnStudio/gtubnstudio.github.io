@@ -45,13 +45,8 @@
             height: 100vh; width: 100vw; overflow: hidden; position: relative;
         }
 
-        #bg-canvas {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 0; pointer-events: none;
-        }
-
         #desktop {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 40px;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 48px;
             z-index: 1; pointer-events: none;
         }
 
@@ -91,6 +86,7 @@
             pointer-events: none; 
         }
 
+        /* 拖拽过程中的事件隔离 */
         body.is-dragging iframe, 
         body.is-dragging .window-body,
         body.is-dragging .info-card {
@@ -104,80 +100,84 @@
         }
 
         .window-header {
-            height: 38px; background: var(--win-header); border-bottom: 1px solid var(--border);
+            height: 46px; background: var(--win-header); border-bottom: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 12px; cursor: move; user-select: none; flex-shrink: 0; touch-action: none;
+            padding: 0 14px; cursor: move; user-select: none; flex-shrink: 0; touch-action: none;
         }
         .window-title { 
-            font-size: 13px; font-weight: 600; color: var(--text); 
+            font-size: 14px; font-weight: 600; color: var(--text); 
             font-family: var(--font-ui); letter-spacing: 0.3px; 
-            display: flex; align-items: center; gap: 8px;
+            display: flex; align-items: center; gap: 10px;
         }
         .window-title svg {
-            width: 15px; height: 15px; stroke: var(--accent); fill: none; flex-shrink: 0;
+            width: 17px; height: 17px; stroke: var(--accent); fill: none; flex-shrink: 0;
         }
         .window-title svg circle.dot-fill {
             fill: var(--accent); stroke: none;
         }
-        .window-controls { display: flex; gap: 8px; align-items: center; }
+        .window-controls { display: flex; gap: 9px; align-items: center; }
         .win-btn {
-            width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer;
+            width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer;
             opacity: 0.88; transition: opacity 0.15s; display: flex; align-items: center; justify-content: center;
+            touch-action: manipulation;
         }
         .win-btn-close { background: #ff5f56; }
         .win-btn-min { background: #ffbd2e; }
         .win-btn-max { background: #27c93f; }
         .win-btn:hover { opacity: 1; }
 
-        .window-body { flex: 1; padding: 16px; overflow-y: auto; color: var(--text); position: relative; }
+        .window-body { 
+            flex: 1; padding: 16px; overflow-y: auto; color: var(--text); position: relative; 
+            -webkit-overflow-scrolling: touch;
+        }
         .window-body::-webkit-scrollbar { width: 6px; }
         .window-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
 
         #taskbar {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+            position: absolute; bottom: 0; left: 0; right: 0; height: 48px;
             background: var(--taskbar-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border-top: 1px solid var(--border); z-index: 9999;
-            display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
         }
         .taskbar-left, .taskbar-right { display: flex; align-items: center; gap: 8px; }
-        .taskbar-center { display: flex; align-items: center; gap: 6px; flex: 1; margin: 0 10px; overflow-x: auto; }
+        .taskbar-center { display: flex; align-items: center; gap: 8px; flex: 1; margin: 0 12px; overflow-x: auto; }
         .taskbar-center::-webkit-scrollbar { display: none; }
 
         .start-btn {
-            display: flex; align-items: center; padding: 4px 10px; border-radius: 6px;
+            display: flex; align-items: center; padding: 6px 12px; border-radius: 6px;
             background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent);
-            color: var(--accent); font-size: 12.5px; font-weight: 700; font-family: var(--font-ui); cursor: pointer;
+            color: var(--accent); font-size: 13px; font-weight: 700; font-family: var(--font-ui); cursor: pointer;
             transition: all 0.15s ease; flex-shrink: 0; gap: 6px;
+            touch-action: manipulation;
         }
-        .start-btn svg { width: 14px; height: 14px; fill: var(--accent); }
+        .start-btn svg { width: 15px; height: 15px; fill: var(--accent); }
         .start-btn:hover { background: var(--accent); color: #fff; }
         .start-btn:hover svg { fill: #fff; }
 
         .task-item {
-            display: flex; align-items: center; gap: 6px;
-            padding: 4px 10px; border-radius: 6px; background: var(--card-inner);
-            border: 1px solid var(--card-inner-border); font-size: 12px; font-family: var(--font-ui); color: var(--muted);
-            cursor: pointer; transition: all 0.15s ease; white-space: nowrap; max-width: 140px;
-            overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 6px; background: var(--card-inner);
+            border: 1px solid var(--card-inner-border); cursor: pointer; transition: all 0.15s ease;
+            flex-shrink: 0; touch-action: manipulation;
         }
-        .task-item svg { width: 13px; height: 13px; stroke: var(--muted); fill: none; flex-shrink: 0; }
+        .task-item svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; flex-shrink: 0; }
         .task-item svg circle.dot-fill { fill: var(--muted); stroke: none; }
-        .task-item:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+        .task-item:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.25); }
         .task-item:hover svg { stroke: var(--text); }
         .task-item:hover svg circle.dot-fill { fill: var(--text); }
-        .task-item.active { background: rgba(88, 166, 255, 0.18); color: #79c0ff; border-color: var(--accent); font-weight: 600; }
+        .task-item.active { background: rgba(88, 166, 255, 0.18); border-color: var(--accent); }
         .task-item.active svg { stroke: #79c0ff; }
         .task-item.active svg circle.dot-fill { fill: #79c0ff; }
 
         .tray-item { 
             display: flex; align-items: center; gap: 6px;
-            font-size: 12px; font-family: var(--font-ui); color: var(--text); padding: 3px 8px; border-radius: 4px; 
+            font-size: 12.5px; font-family: var(--font-ui); color: var(--text); padding: 4px 10px; border-radius: 6px; 
             background: var(--card-inner); border: 1px solid var(--card-inner-border); flex-shrink: 0; 
         }
-        .tray-item svg { width: 13px; height: 13px; stroke: var(--accent); fill: none; }
+        .tray-item svg { width: 14px; height: 14px; stroke: var(--accent); fill: none; }
 
         #start-menu {
-            position: absolute; bottom: 46px; left: 10px; width: 270px;
+            position: absolute; bottom: 54px; left: 10px; width: 270px;
             background: var(--panel-solid); border: 1px solid var(--border);
             border-radius: 10px; padding: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.6);
             z-index: 10000; display: none; flex-direction: column; gap: 8px;
@@ -191,6 +191,7 @@
             background: var(--card-inner); border: 1px solid var(--card-inner-border);
             color: var(--text); font-size: 12.5px; font-family: var(--font-ui); font-weight: 500; cursor: pointer;
             transition: all 0.15s ease;
+            touch-action: manipulation;
         }
         .start-app-btn svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; flex-shrink: 0; }
         .start-app-btn svg circle.dot-fill { fill: currentColor; stroke: none; }
@@ -217,7 +218,7 @@
         .badge.online { background: rgba(46, 160, 67, 0.2); color: #56d364; }
         .badge.offline { background: rgba(248, 81, 73, 0.2); color: #f85149; }
 
-        .action-btn { background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--font-ui); font-weight: 600; cursor: pointer; flex-shrink: 0; }
+        .action-btn { background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--font-ui); font-weight: 600; cursor: pointer; flex-shrink: 0; touch-action: manipulation; }
         .action-btn:hover { background: var(--accent); color: #fff; }
 
         .ua-box { 
@@ -228,39 +229,39 @@
         
         .section-sub-title { margin: 16px 0 8px 0; font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
 
-        .local-video { width: 100%; max-height: 250px; border-radius: 6px; border: 1px solid var(--border); background: #000; object-fit: contain; }
         .inner-frame-box { background: var(--card-inner); border: 1px solid var(--card-inner-border); border-radius: 6px; height: 100%; overflow: hidden; }
         .embedded-iframe { width: 100%; height: 100%; border: none; }
         
         .social-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
-        .social-btn { display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; border-radius: 6px; background: var(--card-inner); border: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 12px; font-family: var(--font-ui); font-weight: 500; }
+        .social-btn { display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; border-radius: 6px; background: var(--card-inner); border: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 12px; font-family: var(--font-ui); font-weight: 500; touch-action: manipulation; }
         .social-btn svg { width: 14px; height: 14px; fill: currentColor; }
         .social-btn:hover { border-color: var(--accent); color: var(--accent); }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* 移动端基础适配 */
         @media (max-width: 768px) {
             .window { 
                 width: 100vw !important; 
-                height: calc(100vh - 40px) !important; 
-                top: 0 !important; 
                 left: 0 !important; 
                 border-radius: 0 !important; 
             }
+            .window-controls { gap: 12px; }
+            .win-btn { width: 15px; height: 15px; }
+            #start-menu { width: calc(100vw - 20px); left: 10px; right: 10px; bottom: 54px; }
             .info-grid { grid-template-columns: repeat(2, 1fr); }
             #taskbar-apps { display: flex !important; margin: 0 6px; }
-            .task-item { font-size: 11px; padding: 3px 6px; max-width: 95px; }
+            .task-item { width: 34px; height: 34px; }
             .tray-item { font-size: 11.5px; padding: 2px 6px; }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="bg-canvas"></canvas>
     <main id="desktop"></main>
 
     <!-- 窗口 1: Home -->
-    <div class="window" id="win-home" style="width: 580px; height: 440px; top: 40px; left: 60px;">
+    <div class="window" id="win-home" style="width: 580px; height: 440px; top: 40px; left: 40px;">
         <div class="window-header" onmousedown="wm.startDrag(event, 'home')" ontouchstart="wm.startDrag(event, 'home')" ondblclick="wm.maximize('home')">
             <div class="window-title">
                 <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none"></path><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="2" fill="none"></polyline></svg>
@@ -292,7 +293,7 @@
     </div>
 
     <!-- 窗口 2: Env -->
-    <div class="window" id="win-env" style="width: 660px; height: 480px; top: 60px; left: 100px;">
+    <div class="window" id="win-env" style="width: 660px; height: 480px; top: 40px; left: 650px;">
         <div class="window-header" onmousedown="wm.startDrag(event, 'env')" ontouchstart="wm.startDrag(event, 'env')" ondblclick="wm.maximize('env')">
             <div class="window-title">
                 <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2"></line><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"></line></svg>
@@ -332,33 +333,8 @@
         </div>
     </div>
 
-    <!-- 窗口 3: Music -->
-    <div class="window" id="win-rick" style="width: 500px; height: 400px; top: 75px; left: 180px;">
-        <div class="window-header" onmousedown="wm.startDrag(event, 'rick')" ontouchstart="wm.startDrag(event, 'rick')" ondblclick="wm.maximize('rick')">
-            <div class="window-title">
-                <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" fill="none"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="2" fill="none"></path></svg>
-                <span>MUSIC!</span>
-            </div>
-            <div class="window-controls">
-                <button class="win-btn win-btn-min" onclick="wm.minimize('rick')"></button>
-                <button class="win-btn win-btn-max" onclick="wm.maximize('rick')"></button>
-                <button class="win-btn win-btn-close" onclick="wm.close('rick')"></button>
-            </div>
-        </div>
-        <div class="window-body">
-            <video class="local-video" controls preload="metadata" playsinline -webkit-playsinline>
-                <source src="media/nggyu.mp4" type="video/mp4">
-            </video>
-            <div style="margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.6;">
-                <p><strong style="color:var(--text)">作品名称：</strong>Never Gonna Give You Up</p>
-                <p><strong style="color:var(--text)">演唱歌手：</strong>Rick Astley</p>
-                <p><strong style="color:var(--text)">发行唱片：</strong>RCA Records / Sony Music Entertainment</p>
-            </div>
-        </div>
-    </div>
-
     <!-- 窗口 4: Search -->
-    <div class="window" id="win-blank" style="width: 580px; height: 420px; top: 85px; left: 220px;">
+    <div class="window" id="win-blank" style="width: 580px; height: 420px; top: 360px; left: 100px;">
         <div class="window-header" onmousedown="wm.startDrag(event, 'blank')" ontouchstart="wm.startDrag(event, 'blank')" ondblclick="wm.maximize('blank')">
             <div class="window-title">
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="2"></line><line x1="9" y1="21" x2="9" y2="9" stroke="currentColor" stroke-width="2"></line></svg>
@@ -378,10 +354,10 @@
     </div>
 
     <!-- 窗口 5: About -->
-    <div class="window" id="win-about" style="width: 440px; height: 390px; top: 100px; left: 160px;">
+    <div class="window" id="win-about" style="width: 440px; height: 390px; top: 360px; left: 720px;">
         <div class="window-header" onmousedown="wm.startDrag(event, 'about')" ontouchstart="wm.startDrag(event, 'about')" ondblclick="wm.maximize('about')">
             <div class="window-title">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle><line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" stroke-width="2"></line><circle class="dot-fill" cx="12" cy="8"r="1"></circle></svg>
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle><line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" stroke-width="2"></line><circle class="dot-fill" cx="12" cy="8" r="1"></circle></svg>
                 <span>关于 Web OS</span>
             </div>
             <div class="window-controls">
@@ -430,10 +406,6 @@
                 <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2"></line><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"></line></svg>
                 环境检测
             </div>
-            <div class="start-app-btn" onclick="wm.open('rick'); closeStartMenu();">
-                <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" fill="none"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="2" fill="none"></path></svg>
-                MUSIC!
-            </div>
             <div class="start-app-btn" onclick="wm.open('blank'); closeStartMenu();">
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="2"></line><line x1="9" y1="21" x2="9" y2="9" stroke="currentColor" stroke-width="2"></line></svg>
                 Web OS Search (BETA)
@@ -468,20 +440,53 @@
             constructor() {
                 this.windows = {};
                 this.topZ = 100;
+                
+                // 拖拽相关属性
                 this.dragTarget = null;
+                this.dragWinId = null;
                 this.dragOffset = { x: 0, y: 0 };
                 this.dragReq = null;
                 this.mousePos = { x: 0, y: 0 };
                 this.activeId = null;
+
+                // 维护移动端窗口激活顺序队列与响应式标记
+                this.mobileActiveOrder = [];
+                this.isMobile = window.innerWidth <= 768;
+
                 this.initEvents();
             }
 
             register(id) {
                 const el = document.getElementById(`win-${id}`);
                 if (!el) return;
-                this.windows[id] = { id, el, isMaximized: false, isMinimized: false, rect: null };
-                el.addEventListener('mousedown', () => this.focus(id));
-                el.addEventListener('touchstart', () => this.focus(id), { passive: true });
+                this.windows[id] = { 
+                    id, 
+                    el, 
+                    isMaximized: false, 
+                    isMinimized: false, 
+                    rect: null,
+                    desktopRect: {
+                        width: el.style.width,
+                        height: el.style.height,
+                        top: el.style.top,
+                        left: el.style.left
+                    }
+                };
+
+                // 防止移动端 touchstart 和 mousedown 重复触发 focus
+                let lastTouchTime = 0;
+                const handleFocus = (e) => {
+                    if (e.type === 'touchstart') {
+                        lastTouchTime = Date.now();
+                        this.focus(id);
+                    } else if (e.type === 'mousedown') {
+                        if (Date.now() - lastTouchTime < 300) return; // 拦截触摸后模拟的 mousedown
+                        this.focus(id);
+                    }
+                };
+
+                el.addEventListener('mousedown', handleFocus);
+                el.addEventListener('touchstart', handleFocus, { passive: true });
             }
 
             open(id) {
@@ -494,7 +499,6 @@
                 win.isMinimized = false;
                 this.focus(id);
                 this.renderTaskbar();
-                this.clampAllWindows();
             }
 
             close(id) {
@@ -503,6 +507,9 @@
                 win.el.classList.remove('active', 'focused', 'minimized');
                 if (this.activeId === id) this.activeId = null;
 
+                // 移除移动端激活队列
+                this.mobileActiveOrder = this.mobileActiveOrder.filter(item => item !== id);
+
                 const mediaEls = win.el.querySelectorAll('video, audio');
                 mediaEls.forEach(media => {
                     media.pause();
@@ -510,6 +517,7 @@
                 });
 
                 this.renderTaskbar();
+                this.updateMobileLayout();
             }
 
             minimize(id) {
@@ -518,16 +526,22 @@
                 win.el.classList.add('minimized');
                 win.isMinimized = true;
                 if (this.activeId === id) this.activeId = null;
+
+                // 移除移动端激活队列
+                this.mobileActiveOrder = this.mobileActiveOrder.filter(item => item !== id);
+
                 this.renderTaskbar();
+                this.updateMobileLayout();
             }
 
             maximize(id) {
+                if (window.innerWidth <= 768) return;
                 const win = this.windows[id];
                 if (!win) return;
                 if (!win.isMaximized) {
                     win.rect = { width: win.el.style.width, height: win.el.style.height, top: win.el.style.top, left: win.el.style.left };
                     win.el.style.width = '100vw';
-                    win.el.style.height = 'calc(100vh - 40px)';
+                    win.el.style.height = 'calc(100vh - 48px)';
                     win.el.style.top = '0px';
                     win.el.style.left = '0px';
                     win.isMaximized = true;
@@ -548,8 +562,16 @@
                     win.el.style.zIndex = this.topZ;
                     win.el.classList.add('focused');
                     this.activeId = id;
+
+                    // 修复的核心逻辑：
+                    // 若当前窗口不在队列中（如刚打开或取消最小化），将其推入末尾；
+                    // 若窗口已在队列中，则保持已有位置索引不变，防止点击窗口时上下对调。
+                    if (!this.mobileActiveOrder.includes(id)) {
+                        this.mobileActiveOrder.push(id);
+                    }
                 }
                 this.renderTaskbar();
+                this.updateMobileLayout();
             }
 
             toggleTask(id) {
@@ -576,6 +598,7 @@
                 if (!win || win.isMaximized) return;
                 
                 this.dragTarget = win.el;
+                this.dragWinId = id;
                 const pos = this.getEventPos(e);
                 const rect = win.el.getBoundingClientRect();
                 this.dragOffset = { x: pos.x - rect.left, y: pos.y - rect.top };
@@ -585,19 +608,83 @@
                 this.focus(id);
             }
 
+            /* 移动端排版逻辑控制 */
+            updateMobileLayout() {
+                if (window.innerWidth > 768) return;
+
+                // 获取目前处于显示/非最小化状态的窗口
+                const activeWins = this.mobileActiveOrder.filter(id => {
+                    const w = this.windows[id];
+                    return w && w.el.classList.contains('active') && !w.isMinimized;
+                });
+
+                let needTaskbarRender = false;
+
+                // 防护规则：如果显示数量大于 2 个，自动将最早激活的窗口最小化
+                while (activeWins.length > 2) {
+                    const oldestId = activeWins.shift();
+                    const winToMin = this.windows[oldestId];
+                    if (winToMin) {
+                        winToMin.el.classList.add('minimized');
+                        winToMin.isMinimized = true;
+                        needTaskbarRender = true;
+                    }
+                    // 同步从队列中清理已自动最小化的窗口 ID
+                    this.mobileActiveOrder = this.mobileActiveOrder.filter(item => item !== oldestId);
+                }
+
+                if (needTaskbarRender) {
+                    this.renderTaskbar();
+                }
+
+                // 规则 1：仅有 1 个窗口显示时，自动占满整个屏幕
+                if (activeWins.length === 1) {
+                    const win = this.windows[activeWins[0]];
+                    if (win) {
+                        win.el.style.top = '0px';
+                        win.el.style.height = 'calc(100vh - 48px)';
+                    }
+                } 
+                // 规则 2：同时存在 2 个窗口时，上下平分屏幕
+                else if (activeWins.length === 2) {
+                    const topWin = this.windows[activeWins[0]];
+                    const bottomWin = this.windows[activeWins[1]];
+
+                    if (topWin) {
+                        topWin.el.style.top = '0px';
+                        topWin.el.style.height = 'calc((100vh - 48px) / 2)';
+                    }
+                    if (bottomWin) {
+                        bottomWin.el.style.top = 'calc((100vh - 48px) / 2)';
+                        bottomWin.el.style.height = 'calc((100vh - 48px) / 2)';
+                    }
+                }
+            }
+
+            /* 从移动端切回桌面端时重置布局 */
+            resetDesktopLayout() {
+                Object.values(this.windows).forEach(win => {
+                    if (!win.isMaximized && win.desktopRect) {
+                        win.el.style.width = win.desktopRect.width;
+                        win.el.style.height = win.desktopRect.height;
+                        win.el.style.top = win.desktopRect.top;
+                        win.el.style.left = win.desktopRect.left;
+                    }
+                });
+            }
+
             initEvents() {
                 const moveHandler = (e) => {
-                    if (!this.dragTarget) return;
                     const pos = this.getEventPos(e);
                     this.mousePos = pos;
 
-                    if (!this.dragReq) {
+                    if (this.dragTarget && !this.dragReq) {
                         this.dragReq = requestAnimationFrame(() => {
                             if (this.dragTarget) {
                                 const rect = this.dragTarget.getBoundingClientRect();
                                 const winWidth = rect.width;
-                                const headerHeight = 38;
-                                const taskbarHeight = 40;
+                                const headerHeight = 46;
+                                const taskbarHeight = 48;
                                 const minVisibleX = 80;
 
                                 let left = this.mousePos.x - this.dragOffset.x;
@@ -608,6 +695,12 @@
 
                                 this.dragTarget.style.left = `${left}px`;
                                 this.dragTarget.style.top = `${top}px`;
+
+                                // 同步保存桌面端最新的拖拽绝对位置
+                                if (this.dragWinId && this.windows[this.dragWinId]) {
+                                    this.windows[this.dragWinId].desktopRect.left = `${left}px`;
+                                    this.windows[this.dragWinId].desktopRect.top = `${top}px`;
+                                }
                             }
                             this.dragReq = null;
                         });
@@ -618,6 +711,7 @@
                     if (this.dragTarget) {
                         this.dragTarget.classList.remove('is-dragging-target');
                         this.dragTarget = null;
+                        this.dragWinId = null;
                     }
                     document.body.classList.remove('is-dragging');
                 };
@@ -629,7 +723,18 @@
             }
 
             clampAllWindows() {
-                if (window.innerWidth <= 768) return;
+                if (window.innerWidth <= 768) {
+                    this.isMobile = true;
+                    this.updateMobileLayout();
+                    return;
+                }
+
+                // 从移动端恢复到桌面端时还原桌面排版
+                if (this.isMobile) {
+                    this.isMobile = false;
+                    this.resetDesktopLayout();
+                }
+
                 Object.values(this.windows).forEach(win => {
                     if (win.isMaximized || !win.el.classList.contains('active')) return;
                     
@@ -637,7 +742,7 @@
                     let left = parseFloat(win.el.style.left) || 0;
                     let top = parseFloat(win.el.style.top) || 0;
 
-                    const maxTop = window.innerHeight - 40 - 38;
+                    const maxTop = window.innerHeight - 48 - 46;
                     const maxLeft = window.innerWidth - 80;
                     const minLeft = -rect.width + 80;
 
@@ -645,6 +750,9 @@
                     if (top < 0) win.el.style.top = '0px';
                     if (left > maxLeft) win.el.style.left = `${Math.max(0, maxLeft)}px`;
                     if (left < minLeft) win.el.style.left = `${Math.min(0, minLeft)}px`;
+
+                    win.desktopRect.left = win.el.style.left;
+                    win.desktopRect.top = win.el.style.top;
                 });
             }
 
@@ -663,7 +771,8 @@
 
                         const item = document.createElement('div');
                         item.className = `task-item ${isFocused ? 'active' : ''}`;
-                        item.innerHTML = `${iconSvg}<span>${titleText}</span>`;
+                        item.title = titleText;
+                        item.innerHTML = `${iconSvg}`;
                         item.onclick = () => this.toggleTask(win.id);
                         container.appendChild(item);
                     }
@@ -672,7 +781,7 @@
         }
 
         const wm = new WindowManager();
-        ['home', 'env', 'rick', 'blank', 'about'].forEach(id => wm.register(id));
+        ['home', 'env', 'blank', 'about'].forEach(id => wm.register(id));
         wm.open('home');
 
         function updateClock() {
@@ -787,59 +896,9 @@
             navigator.clipboard.writeText(info).then(() => alert("完整诊断报告已复制到剪贴板！"));
         });
 
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height, particles = [];
-
-        function initCanvas() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            particles = Array.from({ length: Math.min(Math.floor(width / 24), 30) }, () => ({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 0.3,
-                vy: (Math.random() - 0.5) * 0.3,
-                size: Math.random() * 1.5 + 1
-            }));
-        }
-
-        function drawCanvas() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = "rgba(88, 166, 255, 0.25)";
-            ctx.strokeStyle = "rgba(88, 166, 255, 0.25)";
-
-            for (let i = 0; i < particles.length; i++) {
-                const p = particles[i];
-                p.x += p.vx; p.y += p.vy;
-                if (p.x < 0 || p.x > width) p.vx *= -1;
-                if (p.y < 0 || p.y > height) p.vy *= -1;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-
-                for (let j = i + 1; j < particles.length; j++) {
-                    const p2 = particles[j];
-                    const pdx = p.x - p2.x, pdy = p.y - p2.y;
-                    const distSq = pdx * pdx + pdy * pdy;
-                    if (distSq < 8100) {
-                        ctx.beginPath();
-                        ctx.lineWidth = (1 - Math.sqrt(distSq) / 90) * 0.4;
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    }
-                }
-            }
-            requestAnimationFrame(drawCanvas);
-        }
-
         window.addEventListener('resize', () => {
-            initCanvas();
             wm.clampAllWindows();
         });
-        initCanvas();
-        drawCanvas();
     </script>
 </body>
 </html>
