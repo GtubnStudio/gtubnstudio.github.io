@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web OS Search (BETA)</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --panel: rgba(22, 27, 34, 0.94);
+            --border: rgba(255, 255, 255, 0.14);
+            --border-glow: rgba(88, 166, 255, 0.45);
+            --text: #ffffff;
+            --muted: #a3b3c2;
+            --accent: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.25);
+            --card-inner: rgba(255, 255, 255, 0.05);
+            --card-inner-border: rgba(255, 255, 255, 0.12);
+            --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-ui);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* 头部区域 */
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .main-title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--text);
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .icon-btn:hover {
+            color: var(--accent);
+            background: var(--card-inner);
+        }
+
+        .refresh-btn:hover {
+            transform: rotate(180deg);
+        }
+
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* 搜索引擎切换标签 */
+        .engine-switcher {
+            display: flex;
+            gap: 6px;
+            margin-bottom: -10px;
+        }
+
+        .engine-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 0.82rem;
+            font-family: var(--font-ui);
+            padding: 4px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .engine-btn:hover {
+            color: var(--text);
+        }
+
+        .engine-btn.active {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* 搜索框容器 */
+        .search-box {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            background: var(--card-inner);
+            border: 1px solid var(--card-inner-border);
+            border-radius: 28px;
+            padding: 4px 16px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .search-box:focus-within {
+            border-color: var(--border-glow);
+            box-shadow: 0 0 12px var(--accent-glow);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: var(--font-ui);
+            font-size: 0.95rem;
+            padding: 8px;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .search-input::placeholder {
+            color: var(--muted);
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 0.9rem;
+            display: none;
+            line-height: 1;
+            margin-right: 6px;
+        }
+
+        .clear-btn:hover {
+            color: var(--text);
+        }
+
+        .search-button {
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            padding: 0 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.15s ease;
+        }
+
+        .search-button:hover {
+            opacity: 0.8;
+        }
+
+        .search-button svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* “关于”模态弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            width: 90%;
+            max-width: 440px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            text-align: left;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--card-inner-border);
+            padding-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .close-btn:hover {
+            color: var(--text);
+        }
+
+        .modal-body {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .modal-body p {
+            margin-bottom: 10px;
+        }
+
+        .modal-body strong {
+            color: var(--text);
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 12px 0;
+            padding: 0;
+        }
+
+        .feature-list li {
+            position: relative;
+            padding-left: 16px;
+            margin-bottom: 6px;
+        }
+
+        .feature-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px solid var(--card-inner-border);
+            text-align: right;
+        }
+
+        .action-btn {
+            background: rgba(88, 166, 255, 0.15);
+            border: 1px solid var(--border-glow);
+            color: var(--accent);
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--accent);
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 页面标题与操作按钮栏 -->
+        <div class="header-container">
+            <h1 class="main-title">Web OS Search (BETA)</h1>
+            
+            <!-- 刷新按钮 -->
+            <button type="button" class="icon-btn refresh-btn" onclick="location.reload()" title="刷新页面" aria-label="刷新页面">
+                <svg viewBox="0 0 24 24">
+                    <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+            </button>
+
+            <!-- “关于”按钮 -->
+            <button type="button" class="icon-btn" onclick="openAbout()" title="关于页面" aria-label="关于页面">
+                <svg viewBox="0 0 24 24">
+                    <path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 搜索引擎切换按钮 -->
+        <div class="engine-switcher">
+            <button class="engine-btn active" onclick="switchEngine('bing', this)">Bing</button>
+            <button class="engine-btn" onclick="switchEngine('google', this)">Google</button>
+            <button class="engine-btn" onclick="switchEngine('github', this)">GitHub</button>
+            <button class="engine-btn" onclick="switchEngine('bilibili', this)">Bilibili</button>
+        </div>
+
+        <!-- 搜索表单 -->
+        <form id="search-form" action="https://www.bing.com/search" method="get" target="_blank" class="search-box">
+            <input type="text" id="search-input" name="q" class="search-input" placeholder="Bing 搜索..." autofocus required oninput="toggleClearBtn()">
+            <button type="button" id="clear-btn" class="clear-btn" onclick="clearInput()">&#10005;</button>
+            <button type="submit" class="search-button" aria-label="搜索">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+            </button>
+        </form>
+    </div>
+
+    <!-- “关于”模态弹窗 -->
+    <div id="about-modal" class="modal-overlay" onclick="closeAboutOnOverlay(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">关于 Web OS Search (BETA)</div>
+                <button type="button" class="close-btn" onclick="closeAbout()">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Gtubn Studio Web OS Search (BETA)</strong> 是为 Gtubn Studio Web OS 打造的极简搜索 Web 页。</p>
+                <p>Web 主办：<strong>Gtubn Studio 总理部</strong></p>
+                <p>Web 源代码：<strong>Gtubn Studio 技术宣传部</strong></p>
+                <p>Web 呈现服务：<strong>Github Pages 与 嵌入式网页</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="action-btn" onclick="closeAbout()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局禁用右键菜单
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        const engines = {
+            bing: { action: 'https://www.bing.com/search', name: 'q', placeholder: 'Bing 搜索...' },
+            google: { action: 'https://www.google.com/search', name: 'q', placeholder: 'Google 搜索...' },
+            github: { action: 'https://github.com/search', name: 'q', placeholder: 'GitHub 仓库/代码搜索...' },
+            bilibili: { action: 'https://search.bilibili.com/all', name: 'keyword', placeholder: 'Bilibili 视频/UP主搜索...' }
+        };
+
+        function switchEngine(engineKey, btnEl) {
+            const form = document.getElementById('search-form');
+            const input = document.getElementById('search-input');
+            const targetEngine = engines[engineKey];
+
+            if (!targetEngine) return;
+
+            form.action = targetEngine.action;
+            input.name = targetEngine.name;
+            input.placeholder = targetEngine.placeholder;
+
+            document.querySelectorAll('.engine-btn').forEach(btn => btn.classList.remove('active'));
+            btnEl.classList.add('active');
+            input.focus();
+        }
+
+        function toggleClearBtn() {
+            const input = document.getElementById('search-input');
+            const clearBtn = document.getElementById('clear-btn');
+            clearBtn.style.display = input.value.trim() !== '' ? 'block' : 'none';
+        }
+
+        function clearInput() {
+            const input = document.getElementById('search-input');
+            input.value = '';
+            toggleClearBtn();
+            input.focus();
+        }
+
+        // 模态框控制逻辑
+        function openAbout() {
+            document.getElementById('about-modal').classList.add('active');
+        }
+
+        function closeAbout() {
+            document.getElementById('about-modal').classList.remove('active');
+        }
+
+        function closeAboutOnOverlay(e) {
+            if (e.target.id === 'about-modal') {
+                closeAbout();
+            }
+        }
+    </script>
+</body>
+</html>
