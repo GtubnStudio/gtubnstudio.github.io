@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gtubn Studio Web OS</title>
+
+    <link rel="icon" href="media/weblogo.png" type="image/png">
+    <link rel="icon" href="media/weblogo.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="media/weblogo.png">
+    <meta name="apple-mobile-web-app-title" content="Gtubn Studio">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <style>
+        :root {
+            --bg: #0d1117; 
+            --panel: rgba(22, 27, 34, 0.94); 
+            --panel-solid: #161b22;
+            --border: rgba(255, 255, 255, 0.14);
+            --border-glow: rgba(88, 166, 255, 0.45);
+            --text: #ffffff; 
+            --muted: #a3b3c2; 
+            --accent: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.25);
+            --card-inner: rgba(255, 255, 255, 0.05);
+            --card-inner-border: rgba(255, 255, 255, 0.12);
+            --taskbar-bg: rgba(13, 17, 23, 0.92);
+            --win-header: rgba(30, 36, 44, 0.98);
+            
+            --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+            --font-code: "Cascadia Code", "Fira Code", Consolas, Monaco, "Courier New", monospace;
+        }
+
+        * { 
+            box-sizing: border-box; margin: 0; padding: 0; 
+            user-select: none; -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        body {
+            font-family: var(--font-ui);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: var(--bg); color: var(--text);
+            height: 100vh; width: 100vw; overflow: hidden; position: relative;
+        }
+
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none;
+        }
+
+        #desktop {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 40px;
+            z-index: 1; pointer-events: none;
+        }
+
+        .window {
+            position: absolute; min-width: 290px; min-height: 200px;
+            background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 10px;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+            display: flex; flex-direction: column; overflow: hidden;
+            
+            opacity: 0; 
+            transform: scale(0.88) translateY(18px); 
+            pointer-events: none;
+            z-index: 10;
+
+            transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                        width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                        height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                        top 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                        left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .window.active { 
+            opacity: 1; 
+            transform: scale(1) translateY(0); 
+            pointer-events: auto;
+        }
+        .window.focused { 
+            border-color: var(--border-glow); 
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.7); 
+        }
+        
+        .window.minimized { 
+            opacity: 0; 
+            transform: scale(0.7) translateY(60px); 
+            pointer-events: none; 
+        }
+
+        body.is-dragging iframe, 
+        body.is-dragging .window-body,
+        body.is-dragging .info-card {
+            pointer-events: none !important;
+        }
+        
+        body.is-dragging .window.is-dragging-target {
+            transition: none !important;
+            animation: none !important;
+            will-change: top, left;
+        }
+
+        .window-header {
+            height: 38px; background: var(--win-header); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 12px; cursor: move; user-select: none; flex-shrink: 0; touch-action: none;
+        }
+        .window-title { 
+            font-size: 13px; font-weight: 600; color: var(--text); 
+            font-family: var(--font-ui); letter-spacing: 0.3px; 
+            display: flex; align-items: center; gap: 8px;
+        }
+        .window-title svg {
+            width: 15px; height: 15px; stroke: var(--accent); fill: none; flex-shrink: 0;
+        }
+        .window-title svg circle.dot-fill {
+            fill: var(--accent); stroke: none;
+        }
+        .window-controls { display: flex; gap: 8px; align-items: center; }
+        .win-btn {
+            width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer;
+            opacity: 0.88; transition: opacity 0.15s; display: flex; align-items: center; justify-content: center;
+        }
+        .win-btn-close { background: #ff5f56; }
+        .win-btn-min { background: #ffbd2e; }
+        .win-btn-max { background: #27c93f; }
+        .win-btn:hover { opacity: 1; }
+
+        .window-body { flex: 1; padding: 16px; overflow-y: auto; color: var(--text); position: relative; }
+        .window-body::-webkit-scrollbar { width: 6px; }
+        .window-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+
+        #taskbar {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+            background: var(--taskbar-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border); z-index: 9999;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
+        }
+        .taskbar-left, .taskbar-right { display: flex; align-items: center; gap: 8px; }
+        .taskbar-center { display: flex; align-items: center; gap: 6px; flex: 1; margin: 0 10px; overflow-x: auto; }
+        .taskbar-center::-webkit-scrollbar { display: none; }
+
+        .start-btn {
+            display: flex; align-items: center; padding: 4px 10px; border-radius: 6px;
+            background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent);
+            color: var(--accent); font-size: 12.5px; font-weight: 700; font-family: var(--font-ui); cursor: pointer;
+            transition: all 0.15s ease; flex-shrink: 0; gap: 6px;
+        }
+        .start-btn svg { width: 14px; height: 14px; fill: var(--accent); }
+        .start-btn:hover { background: var(--accent); color: #fff; }
+        .start-btn:hover svg { fill: #fff; }
+
+        .task-item {
+            display: flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 6px; background: var(--card-inner);
+            border: 1px solid var(--card-inner-border); font-size: 12px; font-family: var(--font-ui); color: var(--muted);
+            cursor: pointer; transition: all 0.15s ease; white-space: nowrap; max-width: 140px;
+            overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
+        }
+        .task-item svg { width: 13px; height: 13px; stroke: var(--muted); fill: none; flex-shrink: 0; }
+        .task-item svg circle.dot-fill { fill: var(--muted); stroke: none; }
+        .task-item:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+        .task-item:hover svg { stroke: var(--text); }
+        .task-item:hover svg circle.dot-fill { fill: var(--text); }
+        .task-item.active { background: rgba(88, 166, 255, 0.18); color: #79c0ff; border-color: var(--accent); font-weight: 600; }
+        .task-item.active svg { stroke: #79c0ff; }
+        .task-item.active svg circle.dot-fill { fill: #79c0ff; }
+
+        .tray-item { 
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; font-family: var(--font-ui); color: var(--text); padding: 3px 8px; border-radius: 4px; 
+            background: var(--card-inner); border: 1px solid var(--card-inner-border); flex-shrink: 0; 
+        }
+        .tray-item svg { width: 13px; height: 13px; stroke: var(--accent); fill: none; }
+
+        #start-menu {
+            position: absolute; bottom: 46px; left: 10px; width: 270px;
+            background: var(--panel-solid); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+            z-index: 10000; display: none; flex-direction: column; gap: 8px;
+        }
+        #start-menu.active { display: flex; animation: slideUp 0.15s ease forwards; }
+
+        .start-header { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .start-app-btn {
+            display: flex; align-items: center; justify-content: flex-start; gap: 10px;
+            height: 36px; padding-left: 12px; border-radius: 6px;
+            background: var(--card-inner); border: 1px solid var(--card-inner-border);
+            color: var(--text); font-size: 12.5px; font-family: var(--font-ui); font-weight: 500; cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .start-app-btn svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; flex-shrink: 0; }
+        .start-app-btn svg circle.dot-fill { fill: currentColor; stroke: none; }
+        .start-app-btn:hover { background: rgba(88, 166, 255, 0.15); border-color: var(--accent); color: var(--accent); }
+        .start-app-btn:hover svg { stroke: var(--accent); }
+        .start-app-btn:hover svg circle.dot-fill { fill: var(--accent); }
+
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+        .info-card {
+            background: var(--card-inner); border: 1px solid var(--card-inner-border);
+            border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: center;
+        }
+        .info-card .label { font-size: 11.5px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+        .info-card .value { font-size: 13px; font-weight: 600; color: var(--text); word-break: break-all; }
+
+        .notice-box {
+            padding: 11px; background: rgba(88, 166, 255, 0.08); border: 1px solid var(--accent-glow);
+            border-radius: 8px; margin-top: 10px; font-size: 12.5px; color: var(--text); line-height: 1.5;
+        }
+        .notice-header { display: flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+        .notice-dot { width: 6px; height: 6px; background-color: #ff4d4f; border-radius: 50%; }
+
+        .badge { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: rgba(88, 166, 255, 0.2); color: #79c0ff; font-weight: 600; }
+        .badge.online { background: rgba(46, 160, 67, 0.2); color: #56d364; }
+        .badge.offline { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+
+        .action-btn { background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--font-ui); font-weight: 600; cursor: pointer; flex-shrink: 0; }
+        .action-btn:hover { background: var(--accent); color: #fff; }
+
+        .ua-box { 
+            padding: 10px; background: var(--card-inner); border: 1px solid var(--card-inner-border); 
+            border-radius: 6px; font-family: var(--font-code); font-size: 11.5px; color: var(--text); 
+            word-break: break-all; line-height: 1.5; 
+        }
+        
+        .section-sub-title { margin: 16px 0 8px 0; font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
+
+        .local-video { width: 100%; max-height: 250px; border-radius: 6px; border: 1px solid var(--border); background: #000; object-fit: contain; }
+        .inner-frame-box { background: var(--card-inner); border: 1px solid var(--card-inner-border); border-radius: 6px; height: 100%; overflow: hidden; }
+        .embedded-iframe { width: 100%; height: 100%; border: none; }
+        
+        .social-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+        .social-btn { display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; border-radius: 6px; background: var(--card-inner); border: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 12px; font-family: var(--font-ui); font-weight: 500; }
+        .social-btn svg { width: 14px; height: 14px; fill: currentColor; }
+        .social-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .window { 
+                width: 100vw !important; 
+                height: calc(100vh - 40px) !important; 
+                top: 0 !important; 
+                left: 0 !important; 
+                border-radius: 0 !important; 
+            }
+            .info-grid { grid-template-columns: repeat(2, 1fr); }
+            #taskbar-apps { display: flex !important; margin: 0 6px; }
+            .task-item { font-size: 11px; padding: 3px 6px; max-width: 95px; }
+            .tray-item { font-size: 11.5px; padding: 2px 6px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <main id="desktop"></main>
+
+    <!-- 窗口 1: Home -->
+    <div class="window" id="win-home" style="width: 580px; height: 440px; top: 40px; left: 60px;">
+        <div class="window-header" onmousedown="wm.startDrag(event, 'home')" ontouchstart="wm.startDrag(event, 'home')" ondblclick="wm.maximize('home')">
+            <div class="window-title">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none"></path><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="2" fill="none"></polyline></svg>
+                <span>主页</span>
+            </div>
+            <div class="window-controls">
+                <button class="win-btn win-btn-min" onclick="wm.minimize('home')"></button>
+                <button class="win-btn win-btn-max" onclick="wm.maximize('home')"></button>
+                <button class="win-btn win-btn-close" onclick="wm.close('home')"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            <h3 style="font-size: 16px;">欢迎来到 Gtubn Studio 的网站！</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px;">海内存知己，天涯若比邻。</p>
+            
+            <div class="notice-box">
+                <div class="notice-header"><span class="notice-dot"></span> 站点公告</div>
+                <div>本站部分功能正在持续迭代调整中，最新模块将陆续上线，敬请期待。</div>
+            </div>
+
+            <div class="section-sub-title">节点与网络状态</div>
+            <div class="info-grid">
+                <div class="info-card"><div class="label">部署节点</div><div class="value">GitHub Pages Global</div></div>
+                <div class="info-card"><div class="label">网络延迟 (Ping)</div><div class="value" id="ping-time">计算中...</div></div>
+                <div class="info-card"><div class="label">传输安全</div><div class="value">TLS / HTTPS 加密</div></div>
+                <div class="info-card"><div class="label">服务状态</div><div class="value"><span class="badge online">正常运行</span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 窗口 2: Env -->
+    <div class="window" id="win-env" style="width: 660px; height: 480px; top: 60px; left: 100px;">
+        <div class="window-header" onmousedown="wm.startDrag(event, 'env')" ontouchstart="wm.startDrag(event, 'env')" ondblclick="wm.maximize('env')">
+            <div class="window-title">
+                <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2"></line><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"></line></svg>
+                <span>环境检测</span>
+            </div>
+            <div class="window-controls">
+                <button class="win-btn win-btn-min" onclick="wm.minimize('env')"></button>
+                <button class="win-btn win-btn-max" onclick="wm.maximize('env')"></button>
+                <button class="win-btn win-btn-close" onclick="wm.close('env')"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="font-size: 12.5px; font-weight: 600; color: var(--accent);">详细诊断卡片列表</span>
+                <button class="action-btn" id="copy-btn">复制诊断报告</button>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card"><div class="label">浏览器核心</div><div class="value" id="env-browser">检测中...</div></div>
+                <div class="info-card"><div class="label">操作系统</div><div class="value" id="env-os">检测中...</div></div>
+                <div class="info-card"><div class="label">首选语言</div><div class="value" id="env-lang">检测中...</div></div>
+                <div class="info-card"><div class="label">网络连接状态</div><div class="value" id="env-online">检测中...</div></div>
+                <div class="info-card"><div class="label">屏幕分辨率</div><div class="value" id="env-screen">检测中...</div></div>
+                <div class="info-card"><div class="label">CPU 逻辑核心数</div><div class="value" id="env-cpu">检测中...</div></div>
+                <div class="info-card"><div class="label">GPU 渲染器</div><div class="value" id="env-gpu">检测中...</div></div>
+                <div class="info-card"><div class="label">WebGL 2.0 支持</div><div class="value" id="env-webgl2">检测中...</div></div>
+                <div class="info-card"><div class="label">WebAssembly (WASM)</div><div class="value" id="env-wasm">检测中...</div></div>
+                <div class="info-card"><div class="label">电池与电源状态</div><div class="value" id="env-battery">检测中...</div></div>
+                <div class="info-card"><div class="label">设备内存估计</div><div class="value" id="env-ram">检测中...</div></div>
+                <div class="info-card"><div class="label">触控支持</div><div class="value" id="env-touch">检测中...</div></div>
+                <div class="info-card"><div class="label">当前时区</div><div class="value" id="env-tz">检测中...</div></div>
+                <div class="info-card"><div class="label">Cookie 启用</div><div class="value" id="env-cookie">检测中...</div></div>
+            </div>
+
+            <div class="section-sub-title">USER-AGENT 详细信息</div>
+            <div class="ua-box" id="env-ua">检测中...</div>
+        </div>
+    </div>
+
+    <!-- 窗口 3: Music -->
+    <div class="window" id="win-rick" style="width: 500px; height: 400px; top: 75px; left: 180px;">
+        <div class="window-header" onmousedown="wm.startDrag(event, 'rick')" ontouchstart="wm.startDrag(event, 'rick')" ondblclick="wm.maximize('rick')">
+            <div class="window-title">
+                <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" fill="none"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="2" fill="none"></path></svg>
+                <span>MUSIC!</span>
+            </div>
+            <div class="window-controls">
+                <button class="win-btn win-btn-min" onclick="wm.minimize('rick')"></button>
+                <button class="win-btn win-btn-max" onclick="wm.maximize('rick')"></button>
+                <button class="win-btn win-btn-close" onclick="wm.close('rick')"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            <video class="local-video" controls preload="metadata" playsinline -webkit-playsinline>
+                <source src="media/nggyu.mp4" type="video/mp4">
+            </video>
+            <div style="margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.6;">
+                <p><strong style="color:var(--text)">作品名称：</strong>Never Gonna Give You Up</p>
+                <p><strong style="color:var(--text)">演唱歌手：</strong>Rick Astley</p>
+                <p><strong style="color:var(--text)">发行唱片：</strong>RCA Records / Sony Music Entertainment</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 窗口 4: Search -->
+    <div class="window" id="win-blank" style="width: 580px; height: 420px; top: 85px; left: 220px;">
+        <div class="window-header" onmousedown="wm.startDrag(event, 'blank')" ontouchstart="wm.startDrag(event, 'blank')" ondblclick="wm.maximize('blank')">
+            <div class="window-title">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="2"></line><line x1="9" y1="21" x2="9" y2="9" stroke="currentColor" stroke-width="2"></line></svg>
+                <span>Web OS Search (BETA)</span>
+            </div>
+            <div class="window-controls">
+                <button class="win-btn win-btn-min" onclick="wm.minimize('blank')"></button>
+                <button class="win-btn win-btn-max" onclick="wm.maximize('blank')"></button>
+                <button class="win-btn win-btn-close" onclick="wm.close('blank')"></button>
+            </div>
+        </div>
+        <div class="window-body" style="padding: 8px;">
+            <div class="inner-frame-box">
+                <iframe src="otherpages/embeddedweb.html" class="embedded-iframe"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- 窗口 5: About -->
+    <div class="window" id="win-about" style="width: 440px; height: 390px; top: 100px; left: 160px;">
+        <div class="window-header" onmousedown="wm.startDrag(event, 'about')" ontouchstart="wm.startDrag(event, 'about')" ondblclick="wm.maximize('about')">
+            <div class="window-title">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle><line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" stroke-width="2"></line><circle class="dot-fill" cx="12" cy="8"r="1"></circle></svg>
+                <span>关于 Web OS</span>
+            </div>
+            <div class="window-controls">
+                <button class="win-btn win-btn-min" onclick="wm.minimize('about')"></button>
+                <button class="win-btn win-btn-max" onclick="wm.maximize('about')"></button>
+                <button class="win-btn win-btn-close" onclick="wm.close('about')"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            <div style="text-align: center; margin-bottom: 14px;">
+                <img src="media/logo.jpeg" alt="Gtubn Studio Logo" style="width: 120px; height: 67.5px; aspect-ratio: 16 / 9; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                <h4 style="margin-top: 8px; font-size: 15px; font-weight: 700;">Gtubn Studio</h4>
+                <p style="font-size: 11.5px; color: var(--muted);">&copy; 2026 Gtubn Studio, All Rights Reserved.</p>
+            </div>
+            <div style="font-size: 12px; line-height: 1.7; color: var(--muted); background: var(--card-inner); padding: 10px; border-radius: 8px; border: 1px solid var(--card-inner-border);">
+                <p><strong style="color:var(--text)">Web 主办：</strong> Gtubn Studio 总理部</p>
+                <p><strong style="color:var(--text)">Web 源代码：</strong> Gtubn Studio 技术宣传部</p>
+                <p><strong style="color:var(--text)">Web 呈现服务：</strong> GitHub Pages</p>
+            </div>
+            <div class="social-links" style="margin-top: 12px;">
+                <a href="https://www.douyin.com/user/MS4wLjABAAAA6nr-DmGgVuEr7MlgEWJX9GgkaFzZDaOBe3FCrgVJ4xZhi5Th--6S2MfE2Wzd7oUe" target="_blank" class="social-btn">
+                    抖音（粤区）
+                </a>
+                <a href="https://space.bilibili.com/3546678657289013" target="_blank" class="social-btn">
+                    哔哩哔哩（粤区）
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 开始菜单 -->
+    <div id="start-menu">
+        <div class="start-header">
+            <img src="media/logo.jpeg" alt="Gtubn OS Logo" style="width: 56px; height: 31.5px; aspect-ratio: 16 / 9; object-fit: contain; border-radius: 4px; border: 1px solid var(--border);">
+            <div>
+                <div style="font-weight: 600; font-size: 13px;">Gtubn Studio Web OS</div>
+                <div style="font-size: 11px; color: var(--muted);">IT Web OS</div>
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div class="start-app-btn" onclick="wm.open('home'); closeStartMenu();">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none"></path><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="2" fill="none"></polyline></svg>
+                主页
+            </div>
+            <div class="start-app-btn" onclick="wm.open('env'); closeStartMenu();">
+                <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2"></line><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"></line></svg>
+                环境检测
+            </div>
+            <div class="start-app-btn" onclick="wm.open('rick'); closeStartMenu();">
+                <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" fill="none"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="2" fill="none"></path></svg>
+                MUSIC!
+            </div>
+            <div class="start-app-btn" onclick="wm.open('blank'); closeStartMenu();">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="2"></line><line x1="9" y1="21" x2="9" y2="9" stroke="currentColor" stroke-width="2"></line></svg>
+                Web OS Search (BETA)
+            </div>
+            <div class="start-app-btn" onclick="wm.open('about'); closeStartMenu();">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle><line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" stroke-width="2"></line><circle class="dot-fill" cx="12" cy="8" r="1"></circle></svg>
+                关于 Web OS
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部任务栏 -->
+    <footer id="taskbar">
+        <div class="taskbar-left">
+            <button class="start-btn" onclick="toggleStartMenu(event)">
+                Web OS Functions
+            </button>
+        </div>
+        <div class="taskbar-center" id="taskbar-apps"></div>
+        <div class="taskbar-right">
+            <div class="tray-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span id="tray-clock">00:00:00</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        window.addEventListener('contextmenu', (e) => { e.preventDefault(); }, false);
+
+        class WindowManager {
+            constructor() {
+                this.windows = {};
+                this.topZ = 100;
+                this.dragTarget = null;
+                this.dragOffset = { x: 0, y: 0 };
+                this.dragReq = null;
+                this.mousePos = { x: 0, y: 0 };
+                this.activeId = null;
+                this.initEvents();
+            }
+
+            register(id) {
+                const el = document.getElementById(`win-${id}`);
+                if (!el) return;
+                this.windows[id] = { id, el, isMaximized: false, isMinimized: false, rect: null };
+                el.addEventListener('mousedown', () => this.focus(id));
+                el.addEventListener('touchstart', () => this.focus(id), { passive: true });
+            }
+
+            open(id) {
+                if (!this.windows[id]) this.register(id);
+                const win = this.windows[id];
+                if (!win) return;
+                
+                win.el.classList.remove('minimized');
+                win.el.classList.add('active');
+                win.isMinimized = false;
+                this.focus(id);
+                this.renderTaskbar();
+                this.clampAllWindows();
+            }
+
+            close(id) {
+                const win = this.windows[id];
+                if (!win) return;
+                win.el.classList.remove('active', 'focused', 'minimized');
+                if (this.activeId === id) this.activeId = null;
+
+                const mediaEls = win.el.querySelectorAll('video, audio');
+                mediaEls.forEach(media => {
+                    media.pause();
+                    media.currentTime = 0;
+                });
+
+                this.renderTaskbar();
+            }
+
+            minimize(id) {
+                const win = this.windows[id];
+                if (!win) return;
+                win.el.classList.add('minimized');
+                win.isMinimized = true;
+                if (this.activeId === id) this.activeId = null;
+                this.renderTaskbar();
+            }
+
+            maximize(id) {
+                const win = this.windows[id];
+                if (!win) return;
+                if (!win.isMaximized) {
+                    win.rect = { width: win.el.style.width, height: win.el.style.height, top: win.el.style.top, left: win.el.style.left };
+                    win.el.style.width = '100vw';
+                    win.el.style.height = 'calc(100vh - 40px)';
+                    win.el.style.top = '0px';
+                    win.el.style.left = '0px';
+                    win.isMaximized = true;
+                } else {
+                    win.el.style.width = win.rect.width;
+                    win.el.style.height = win.rect.height;
+                    win.el.style.top = win.rect.top;
+                    win.el.style.left = win.rect.left;
+                    win.isMaximized = false;
+                }
+            }
+
+            focus(id) {
+                Object.values(this.windows).forEach(w => w.el.classList.remove('focused'));
+                const win = this.windows[id];
+                if (win && !win.isMinimized) {
+                    this.topZ += 1;
+                    win.el.style.zIndex = this.topZ;
+                    win.el.classList.add('focused');
+                    this.activeId = id;
+                }
+                this.renderTaskbar();
+            }
+
+            toggleTask(id) {
+                const win = this.windows[id];
+                if (!win) return;
+                if (win.isMinimized || !win.el.classList.contains('focused')) {
+                    this.open(id);
+                } else {
+                    this.minimize(id);
+                }
+            }
+
+            getEventPos(e) {
+                if (e.touches && e.touches.length > 0) {
+                    return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+                return { x: e.clientX, y: e.clientY };
+            }
+
+            startDrag(e, id) {
+                if (window.innerWidth <= 768) return;
+                
+                const win = this.windows[id];
+                if (!win || win.isMaximized) return;
+                
+                this.dragTarget = win.el;
+                const pos = this.getEventPos(e);
+                const rect = win.el.getBoundingClientRect();
+                this.dragOffset = { x: pos.x - rect.left, y: pos.y - rect.top };
+                
+                document.body.classList.add('is-dragging');
+                this.dragTarget.classList.add('is-dragging-target');
+                this.focus(id);
+            }
+
+            initEvents() {
+                const moveHandler = (e) => {
+                    if (!this.dragTarget) return;
+                    const pos = this.getEventPos(e);
+                    this.mousePos = pos;
+
+                    if (!this.dragReq) {
+                        this.dragReq = requestAnimationFrame(() => {
+                            if (this.dragTarget) {
+                                const rect = this.dragTarget.getBoundingClientRect();
+                                const winWidth = rect.width;
+                                const headerHeight = 38;
+                                const taskbarHeight = 40;
+                                const minVisibleX = 80;
+
+                                let left = this.mousePos.x - this.dragOffset.x;
+                                let top = this.mousePos.y - this.dragOffset.y;
+
+                                top = Math.max(0, Math.min(top, window.innerHeight - taskbarHeight - headerHeight));
+                                left = Math.max(-winWidth + minVisibleX, Math.min(left, window.innerWidth - minVisibleX));
+
+                                this.dragTarget.style.left = `${left}px`;
+                                this.dragTarget.style.top = `${top}px`;
+                            }
+                            this.dragReq = null;
+                        });
+                    }
+                };
+
+                const endHandler = () => {
+                    if (this.dragTarget) {
+                        this.dragTarget.classList.remove('is-dragging-target');
+                        this.dragTarget = null;
+                    }
+                    document.body.classList.remove('is-dragging');
+                };
+
+                window.addEventListener('mousemove', moveHandler, { passive: true });
+                window.addEventListener('mouseup', endHandler);
+                window.addEventListener('touchmove', moveHandler, { passive: true });
+                window.addEventListener('touchend', endHandler);
+            }
+
+            clampAllWindows() {
+                if (window.innerWidth <= 768) return;
+                Object.values(this.windows).forEach(win => {
+                    if (win.isMaximized || !win.el.classList.contains('active')) return;
+                    
+                    const rect = win.el.getBoundingClientRect();
+                    let left = parseFloat(win.el.style.left) || 0;
+                    let top = parseFloat(win.el.style.top) || 0;
+
+                    const maxTop = window.innerHeight - 40 - 38;
+                    const maxLeft = window.innerWidth - 80;
+                    const minLeft = -rect.width + 80;
+
+                    if (top > maxTop) win.el.style.top = `${Math.max(0, maxTop)}px`;
+                    if (top < 0) win.el.style.top = '0px';
+                    if (left > maxLeft) win.el.style.left = `${Math.max(0, maxLeft)}px`;
+                    if (left < minLeft) win.el.style.left = `${Math.min(0, minLeft)}px`;
+                });
+            }
+
+            renderTaskbar() {
+                const container = document.getElementById('taskbar-apps');
+                if (!container) return;
+                container.innerHTML = '';
+
+                Object.values(this.windows).forEach(win => {
+                    if (win.el.classList.contains('active')) {
+                        const titleEl = win.el.querySelector('.window-title');
+                        const iconSvg = titleEl.querySelector('svg') ? titleEl.querySelector('svg').outerHTML : '';
+                        const titleText = titleEl.querySelector('span') ? titleEl.querySelector('span').innerText : titleEl.innerText;
+                        
+                        const isFocused = win.el.classList.contains('focused') && !win.isMinimized;
+
+                        const item = document.createElement('div');
+                        item.className = `task-item ${isFocused ? 'active' : ''}`;
+                        item.innerHTML = `${iconSvg}<span>${titleText}</span>`;
+                        item.onclick = () => this.toggleTask(win.id);
+                        container.appendChild(item);
+                    }
+                });
+            }
+        }
+
+        const wm = new WindowManager();
+        ['home', 'env', 'rick', 'blank', 'about'].forEach(id => wm.register(id));
+        wm.open('home');
+
+        function updateClock() {
+            const clockEl = document.getElementById('tray-clock');
+            if (clockEl) clockEl.innerText = new Date().toTimeString().split(' ')[0];
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function toggleStartMenu(e) {
+            if (e) {
+                e.stopPropagation();
+                if (e.type === 'touchstart') e.preventDefault();
+            }
+            document.getElementById('start-menu').classList.toggle('active');
+        }
+
+        function closeStartMenu() {
+            document.getElementById('start-menu').classList.remove('active');
+        }
+
+        const dismissStartMenuHandler = (e) => {
+            const startMenu = document.getElementById('start-menu');
+            const startBtn = document.querySelector('.start-btn');
+            if (startMenu.classList.contains('active') && !startMenu.contains(e.target) && !startBtn.contains(e.target)) {
+                closeStartMenu();
+            }
+        };
+        document.addEventListener('click', dismissStartMenuHandler);
+        document.addEventListener('touchstart', dismissStartMenuHandler, { passive: true });
+
+        function measurePing() {
+            const pingEl = document.getElementById('ping-time');
+            if (location.protocol === 'file:') {
+                if (pingEl) pingEl.innerText = "本地文件环境";
+                return;
+            }
+
+            const start = performance.now();
+            fetch(location.href, { method: 'HEAD', cache: 'no-cache' })
+                .then(() => {
+                    const duration = Math.round(performance.now() - start);
+                    if (pingEl) pingEl.innerText = `${duration} ms`;
+                })
+                .catch(() => { 
+                    if (pingEl) pingEl.innerText = "测量受限"; 
+                });
+        }
+        measurePing();
+
+        function detectEnvironment() {
+            const ua = navigator.userAgent;
+            let browser = "Unknown Browser", os = "Unknown System";
+
+            if (ua.includes("Edg/")) browser = "Microsoft Edge";
+            else if (ua.includes("Chrome")) browser = "Chromium";
+            else if (ua.includes("Safari")) browser = "Apple Safari";
+            else if (ua.includes("Firefox")) browser = "Mozilla Firefox";
+
+            if (ua.includes("Win")) os = "Windows";
+            else if (ua.includes("Mac")) os = "macOS";
+            else if (ua.includes("Android")) os = "Android";
+            else if (ua.includes("iPhone")) os = "iOS";
+            else if (ua.includes("Linux")) os = "Linux";
+
+            document.getElementById('env-browser').innerText = browser;
+            document.getElementById('env-os').innerText = os;
+            document.getElementById('env-lang').innerText = navigator.language || "未知";
+            document.getElementById('env-online').innerHTML = navigator.onLine 
+                ? `<span class="badge online">在线</span>` 
+                : `<span class="badge offline">离线</span>`;
+            document.getElementById('env-screen').innerText = `${window.screen.width} × ${window.screen.height}`;
+            document.getElementById('env-cpu').innerText = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} 线程` : "未知";
+            document.getElementById('env-ram').innerText = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "未知";
+            document.getElementById('env-touch').innerText = ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? "支持" : "不支持";
+            document.getElementById('env-tz').innerText = Intl.DateTimeFormat().resolvedOptions().timeZone || "未知";
+            document.getElementById('env-cookie').innerText = navigator.cookieEnabled ? "启用" : "禁用";
+            document.getElementById('env-ua').innerText = ua;
+
+            try {
+                const canvasGl = document.createElement('canvas');
+                const gl = canvasGl.getContext('webgl') || canvasGl.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo && debugInfo.UNMASKED_RENDERER_GL) {
+                        document.getElementById('env-gpu').innerText = gl.getParameter(debugInfo.UNMASKED_RENDERER_GL) || "通用 GPU 渲染器";
+                    } else {
+                        document.getElementById('env-gpu').innerText = gl.getParameter(gl.RENDERER) || "基础硬件加速";
+                    }
+                } else {
+                    document.getElementById('env-gpu').innerText = "不支持 WebGL";
+                }
+            } catch(e) { 
+                document.getElementById('env-gpu').innerText = "受限或不支持"; 
+            }
+
+            document.getElementById('env-webgl2').innerText = !!document.createElement('canvas').getContext('webgl2') ? "支持" : "不支持";
+            document.getElementById('env-wasm').innerText = (typeof WebAssembly === "object") ? "支持" : "不支持";
+
+            if (navigator.getBattery) {
+                navigator.getBattery().then(b => {
+                    document.getElementById('env-battery').innerText = `${Math.round(b.level * 100)}%${b.charging ? " (充电中)" : ""}`;
+                }).catch(() => { document.getElementById('env-battery').innerText = "受限"; });
+            } else {
+                document.getElementById('env-battery').innerText = "不受支持";
+            }
+        }
+        detectEnvironment();
+
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            const info = `Gtubn Studio OS 环境诊断报告:\n- 浏览器: ${document.getElementById('env-browser').innerText}\n- OS: ${document.getElementById('env-os').innerText}\n- 逻辑 CPU: ${document.getElementById('env-cpu').innerText}\n- GPU: ${document.getElementById('env-gpu').innerText}\n- User-Agent: ${navigator.userAgent}`;
+            navigator.clipboard.writeText(info).then(() => alert("完整诊断报告已复制到剪贴板！"));
+        });
+
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = Array.from({ length: Math.min(Math.floor(width / 24), 30) }, () => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                size: Math.random() * 1.5 + 1
+            }));
+        }
+
+        function drawCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "rgba(88, 166, 255, 0.25)";
+            ctx.strokeStyle = "rgba(88, 166, 255, 0.25)";
+
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const pdx = p.x - p2.x, pdy = p.y - p2.y;
+                    const distSq = pdx * pdx + pdy * pdy;
+                    if (distSq < 8100) {
+                        ctx.beginPath();
+                        ctx.lineWidth = (1 - Math.sqrt(distSq) / 90) * 0.4;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(drawCanvas);
+        }
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            wm.clampAllWindows();
+        });
+        initCanvas();
+        drawCanvas();
+    </script>
+</body>
+</html>
