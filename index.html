@@ -218,7 +218,7 @@
         .badge.online { background: rgba(46, 160, 67, 0.2); color: #56d364; }
         .badge.offline { background: rgba(248, 81, 73, 0.2); color: #f85149; }
 
-        .action-btn { background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--font-ui); font-weight: 600; cursor: pointer; flex-shrink: 0; touch-action: manipulation; }
+        .action-btn { background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--font-ui); font-weight: 600; cursor: pointer; flex-shrink: 0; touch-action: manipulation; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
         .action-btn:hover { background: var(--accent); color: #fff; }
 
         .ua-box { 
@@ -237,7 +237,143 @@
         .social-btn svg { width: 14px; height: 14px; fill: currentColor; }
         .social-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+        .resource-card {
+            background: var(--card-inner);
+            border: 1px solid var(--card-inner-border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .resource-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .resource-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .resource-desc {
+            font-size: 11.5px;
+            color: var(--muted);
+        }
+
         @keyframes slideUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 系统通知滑动动画 */
+        @keyframes toastSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(120px) scale(0.92);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes toastSlideOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(140px) scale(0.88);
+            }
+        }
+
+        /* 下载管理右下角通知弹窗容器 */
+        #download-manager-container {
+            position: absolute;
+            bottom: 58px;
+            right: 14px;
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .download-toast {
+            width: 320px;
+            background: var(--panel-solid);
+            border: 1px solid var(--border-glow);
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(18px);
+            pointer-events: auto;
+            animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            will-change: transform, opacity;
+        }
+
+        .download-toast.closing {
+            animation: toastSlideOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* 系统通知顶栏样式 */
+        .toast-system-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--muted);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 6px;
+            margin-bottom: 2px;
+        }
+
+        .toast-system-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.3px;
+        }
+
+        .toast-close-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 2px;
+            transition: color 0.15s ease;
+        }
+
+        .toast-close-btn:hover {
+            color: var(--text);
+        }
+
+        .download-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .download-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 210px;
+        }
 
         /* 移动端基础适配 */
         @media (max-width: 768px) {
@@ -253,6 +389,8 @@
             #taskbar-apps { display: flex !important; margin: 0 6px; }
             .task-item { width: 34px; height: 34px; }
             .tray-item { font-size: 11.5px; padding: 2px 6px; }
+            #download-manager-container { right: 10px; left: 10px; }
+            .download-toast { width: 100%; }
         }
     </style>
 </head>
@@ -333,6 +471,37 @@
         </div>
     </div>
 
+    <!-- 窗口 3: Resources (资源中心) -->
+    <div class="window" id="win-resources" style="width: 580px; height: 420px; top: 120px; left: 200px;">
+        <div class="window-header" onmousedown="wm.startDrag(event, 'resources')" ontouchstart="wm.startDrag(event, 'resources')" ondblclick="wm.maximize('resources')">
+            <div class="window-title">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" fill="none"></path><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" fill="none"></polyline><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2"></line></svg>
+                <span>资源中心</span>
+            </div>
+            <div class="window-controls">
+                <button class="win-btn win-btn-min" onclick="wm.minimize('resources')"></button>
+                <button class="win-btn win-btn-max" onclick="wm.maximize('resources')"></button>
+                <button class="win-btn win-btn-close" onclick="wm.close('resources')"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            <div class="section-sub-title" style="margin-top: 0;">软件与工具下载</div>
+            
+            <div class="resource-card">
+                <div class="resource-info">
+                    <div class="resource-title">Create a Windows To Go workspace Setup.exe</div>
+                    <div class="resource-desc">创建 Windows To Go 工作区（Windows 10 1909 原生提取）安装程序</div>
+                </div>
+                <a class="action-btn" href="files/Create a Windows To Go workspace Setup.exe" download>下载</a>
+            </div>
+            
+            <div class="notice-box" style="margin-top: 14px; font-size: 11.5px; color: var(--muted); border-color: var(--card-inner-border);">
+                <div class="notice-header" style="color: var(--muted); font-size: 12px;">免责声明与版权提示</div>
+                <div>本站软件来源于我们个人收集、原生提取或开源社区，版权归属原作者或原版权方所有。本站仅提供存储与下载服务，不承担因使用第三方软件所引起的任何直接或间接法律责任。使用相关工具前请了解其用途并自行承担相应风险。</div>
+            </div>
+        </div>
+    </div>
+
     <!-- 窗口 4: Search -->
     <div class="window" id="win-blank" style="width: 580px; height: 420px; top: 360px; left: 100px;">
         <div class="window-header" onmousedown="wm.startDrag(event, 'blank')" ontouchstart="wm.startDrag(event, 'blank')" ondblclick="wm.maximize('blank')">
@@ -406,6 +575,10 @@
                 <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2"></line><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"></line></svg>
                 环境检测
             </div>
+            <div class="start-app-btn" onclick="wm.open('resources'); closeStartMenu();">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" fill="none"></path><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" fill="none"></polyline><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2"></line></svg>
+                资源中心
+            </div>
             <div class="start-app-btn" onclick="wm.open('blank'); closeStartMenu();">
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"></rect><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="2"></line><line x1="9" y1="21" x2="9" y2="9" stroke="currentColor" stroke-width="2"></line></svg>
                 Web OS Search (BETA)
@@ -416,6 +589,9 @@
             </div>
         </div>
     </div>
+
+    <!-- 下载管理右下角弹窗容器 -->
+    <div id="download-manager-container"></div>
 
     <!-- 底部任务栏 -->
     <footer id="taskbar">
@@ -473,14 +649,13 @@
                     }
                 };
 
-                // 防止移动端 touchstart 和 mousedown 重复触发 focus
                 let lastTouchTime = 0;
                 const handleFocus = (e) => {
                     if (e.type === 'touchstart') {
                         lastTouchTime = Date.now();
                         this.focus(id);
                     } else if (e.type === 'mousedown') {
-                        if (Date.now() - lastTouchTime < 300) return; // 拦截触摸后模拟的 mousedown
+                        if (Date.now() - lastTouchTime < 300) return;
                         this.focus(id);
                     }
                 };
@@ -507,7 +682,6 @@
                 win.el.classList.remove('active', 'focused', 'minimized');
                 if (this.activeId === id) this.activeId = null;
 
-                // 移除移动端激活队列
                 this.mobileActiveOrder = this.mobileActiveOrder.filter(item => item !== id);
 
                 const mediaEls = win.el.querySelectorAll('video, audio');
@@ -527,7 +701,6 @@
                 win.isMinimized = true;
                 if (this.activeId === id) this.activeId = null;
 
-                // 移除移动端激活队列
                 this.mobileActiveOrder = this.mobileActiveOrder.filter(item => item !== id);
 
                 this.renderTaskbar();
@@ -563,9 +736,6 @@
                     win.el.classList.add('focused');
                     this.activeId = id;
 
-                    // 修复的核心逻辑：
-                    // 若当前窗口不在队列中（如刚打开或取消最小化），将其推入末尾；
-                    // 若窗口已在队列中，则保持已有位置索引不变，防止点击窗口时上下对调。
                     if (!this.mobileActiveOrder.includes(id)) {
                         this.mobileActiveOrder.push(id);
                     }
@@ -608,11 +778,9 @@
                 this.focus(id);
             }
 
-            /* 移动端排版逻辑控制 */
             updateMobileLayout() {
                 if (window.innerWidth > 768) return;
 
-                // 获取目前处于显示/非最小化状态的窗口
                 const activeWins = this.mobileActiveOrder.filter(id => {
                     const w = this.windows[id];
                     return w && w.el.classList.contains('active') && !w.isMinimized;
@@ -620,7 +788,6 @@
 
                 let needTaskbarRender = false;
 
-                // 防护规则：如果显示数量大于 2 个，自动将最早激活的窗口最小化
                 while (activeWins.length > 2) {
                     const oldestId = activeWins.shift();
                     const winToMin = this.windows[oldestId];
@@ -629,7 +796,6 @@
                         winToMin.isMinimized = true;
                         needTaskbarRender = true;
                     }
-                    // 同步从队列中清理已自动最小化的窗口 ID
                     this.mobileActiveOrder = this.mobileActiveOrder.filter(item => item !== oldestId);
                 }
 
@@ -637,7 +803,6 @@
                     this.renderTaskbar();
                 }
 
-                // 规则 1：仅有 1 个窗口显示时，自动占满整个屏幕
                 if (activeWins.length === 1) {
                     const win = this.windows[activeWins[0]];
                     if (win) {
@@ -645,7 +810,6 @@
                         win.el.style.height = 'calc(100vh - 48px)';
                     }
                 } 
-                // 规则 2：同时存在 2 个窗口时，上下平分屏幕
                 else if (activeWins.length === 2) {
                     const topWin = this.windows[activeWins[0]];
                     const bottomWin = this.windows[activeWins[1]];
@@ -661,7 +825,6 @@
                 }
             }
 
-            /* 从移动端切回桌面端时重置布局 */
             resetDesktopLayout() {
                 Object.values(this.windows).forEach(win => {
                     if (!win.isMaximized && win.desktopRect) {
@@ -696,7 +859,6 @@
                                 this.dragTarget.style.left = `${left}px`;
                                 this.dragTarget.style.top = `${top}px`;
 
-                                // 同步保存桌面端最新的拖拽绝对位置
                                 if (this.dragWinId && this.windows[this.dragWinId]) {
                                     this.windows[this.dragWinId].desktopRect.left = `${left}px`;
                                     this.windows[this.dragWinId].desktopRect.top = `${top}px`;
@@ -729,7 +891,6 @@
                     return;
                 }
 
-                // 从移动端恢复到桌面端时还原桌面排版
                 if (this.isMobile) {
                     this.isMobile = false;
                     this.resetDesktopLayout();
@@ -781,7 +942,7 @@
         }
 
         const wm = new WindowManager();
-        ['home', 'env', 'blank', 'about'].forEach(id => wm.register(id));
+        ['home', 'env', 'resources', 'blank', 'about'].forEach(id => wm.register(id));
         wm.open('home');
 
         function updateClock() {
@@ -898,6 +1059,79 @@
 
         window.addEventListener('resize', () => {
             wm.clampAllWindows();
+        });
+
+        /* WebOS 下载管理器（移除内存缓存，直接唤起浏览器原生下载） */
+        class WebOSDownloadManager {
+            constructor() {
+                this.container = document.getElementById('download-manager-container');
+            }
+
+            startDownload(url, filename) {
+                // 1. 触发浏览器原生下载
+                const a = document.createElement('a');
+                a.href = encodeURI(url);
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                // 2. 弹出 WebOS 系统通知弹窗（保留UI与动画）
+                this.showToast(filename);
+            }
+
+            showToast(filename) {
+                const taskId = 'toast_' + Date.now();
+                const toast = document.createElement('div');
+                toast.className = 'download-toast';
+                toast.id = taskId;
+                toast.innerHTML = `
+                    <div class="toast-system-header">
+                        <div class="toast-system-title">
+                            <svg style="width:12px;height:12px;stroke:var(--accent);fill:none;" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2"></path><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2"></path></svg>
+                            <span>下载管理通知</span>
+                        </div>
+                        <button class="toast-close-btn" onclick="dlManager.closeToast('${taskId}')" title="关闭">&times;</button>
+                    </div>
+                    <div class="download-header">
+                        <div class="download-title">
+                            <svg style="width:14px;height:14px;stroke:var(--accent);fill:none;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2"></path><polyline points="7 10 12 15 17 10" stroke-width="2"></polyline><line x1="12" y1="15" x2="12" y2="3" stroke-width="2"></line></svg>
+                            <span>${filename}</span>
+                        </div>
+                        <span class="badge online">已启动</span>
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--muted); margin-top: 4px;">
+                        浏览器下载管理器正在处理，请在浏览器下载栏查看进度。
+                    </div>
+                `;
+                this.container.appendChild(toast);
+
+                // 5 秒后自动平滑淡出关闭
+                setTimeout(() => {
+                    this.closeToast(taskId);
+                }, 5000);
+            }
+
+            closeToast(taskId) {
+                const toast = document.getElementById(taskId);
+                if (toast && !toast.classList.contains('closing')) {
+                    toast.classList.add('closing');
+                    setTimeout(() => toast.remove(), 250);
+                }
+            }
+        }
+
+        const dlManager = new WebOSDownloadManager();
+
+        // 绑定资源中心所有下载按钮
+        document.querySelectorAll('.resource-card .action-btn[download]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const url = btn.getAttribute('href');
+                const filename = url.split('/').pop() || 'download_file';
+                dlManager.startDownload(url, filename);
+            });
         });
     </script>
 </body>
