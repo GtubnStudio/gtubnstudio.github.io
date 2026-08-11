@@ -263,6 +263,100 @@
             color: var(--muted);
         }
 
+        /* 商店风格详情页样式 */
+        .store-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--card-inner);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--card-inner-border);
+            margin-bottom: 16px;
+        }
+        .store-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid var(--accent-glow);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .store-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .store-main-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .store-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .store-tagline {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .store-btn-download {
+            background: var(--accent);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.15s;
+        }
+        .store-btn-download:hover {
+            opacity: 0.9;
+        }
+        .store-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .store-meta-item {
+            background: var(--card-inner);
+            border: 1px solid var(--card-inner-border);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+        .store-meta-item .meta-label {
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .store-meta-item .meta-val {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 2px;
+        }
+        .store-description {
+            font-size: 12.5px;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--card-inner);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--card-inner-border);
+        }
+
         @keyframes slideUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
         /* 系统通知滑动动画 */
@@ -489,15 +583,67 @@
             
             <div class="resource-card">
                 <div class="resource-info">
-                    <div class="resource-title">Create a Windows To Go workspace Setup.exe</div>
+                    <div class="resource-title">创建 Windows To Go 工作区</div>
                     <div class="resource-desc">创建 Windows To Go 工作区（Windows 10 1909 原生提取）安装程序</div>
                 </div>
-                <a class="action-btn" href="files/Create a Windows To Go workspace Setup.exe" download>下载</a>
+                <button class="action-btn" onclick="showAppDetail('wtg')">详情</button>
             </div>
             
             <div class="notice-box" style="margin-top: 14px; font-size: 11.5px; color: var(--muted); border-color: var(--card-inner-border);">
                 <div class="notice-header" style="color: var(--muted); font-size: 12px;">免责声明与版权提示</div>
                 <div>本站软件来源于我们个人收集、原生提取或开源社区，版权归属原作者或原版权方所有。本站仅提供存储与下载服务，不承担因使用第三方软件所引起的任何直接或间接法律责任。使用相关工具前请了解其用途并自行承担相应风险。</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 窗口 3.5: Resource Details (通用商店风格资源详情窗口) -->
+    <div class="window" id="win-res-detail" style="width: 540px; height: 430px; top: 150px; left: 260px;">
+        <div class="window-header" onmousedown="wm.startDrag(event, 'res-detail')" ontouchstart="wm.startDrag(event, 'res-detail')" ondblclick="wm.maximize('res-detail')">
+            <div class="window-title">
+                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" stroke-width="2" fill="none"></path><line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2"></line><path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="2" fill="none"></path></svg>
+                <span id="res-detail-win-title">应用详情</span>
+            </div>
+            <div class="window-controls">
+                <button class="win-btn win-btn-min" onclick="wm.minimize('res-detail')"></button>
+                <button class="win-btn win-btn-max" onclick="wm.maximize('res-detail')"></button>
+                <button class="win-btn win-btn-close" onclick="wm.close('res-detail')"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            <div class="store-header">
+                <div class="store-icon">
+                    <img id="res-detail-icon" src="" alt="App Logo">
+                </div>
+                <div class="store-main-info">
+                    <div class="store-title" id="res-detail-name">--</div>
+                    <div class="store-tagline" id="res-detail-tagline">--</div>
+                    <div style="margin-top: 6px;">
+                        <a class="store-btn-download" id="res-detail-dl-btn" href="#" download>
+                            <svg style="width:14px;height:14px;fill:none;stroke:currentColor;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2"></path><polyline points="7 10 12 15 17 10" stroke-width="2"></polyline><line x1="12" y1="15" x2="12" y2="3" stroke-width="2"></line></svg>
+                            立即下载
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-meta-grid">
+                <div class="store-meta-item">
+                    <div class="meta-label">软件类型</div>
+                    <div class="meta-val" id="res-detail-type">--</div>
+                </div>
+                <div class="store-meta-item">
+                    <div class="meta-label">适用系统</div>
+                    <div class="meta-val" id="res-detail-sys">--</div>
+                </div>
+                <div class="store-meta-item">
+                    <div class="meta-label">来源分类</div>
+                    <div class="meta-val" id="res-detail-source">--</div>
+                </div>
+            </div>
+
+            <div class="section-sub-title" style="margin-top:0;">软件介绍</div>
+            <div class="store-description" id="res-detail-desc">
+                --
             </div>
         </div>
     </div>
@@ -576,7 +722,7 @@
                 环境检测
             </div>
             <div class="start-app-btn" onclick="wm.open('resources'); closeStartMenu();">
-                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" fill="none"></path><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" fill="none"></polyline><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2"></line></svg>
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" fill="none"></path><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" fill="none"></polyline><line x1="12" y1="15" x2="12" y2="3" stroke-width="2"></line></svg>
                 资源中心
             </div>
             <div class="start-app-btn" onclick="wm.open('blank'); closeStartMenu();">
@@ -611,6 +757,42 @@
 
     <script>
         window.addEventListener('contextmenu', (e) => { e.preventDefault(); }, false);
+
+        /* 存储可调用应用的数据集合 */
+        const appDatabase = {
+            'wtg': {
+                title: '创建 Windows To Go 工作区',
+                tagline: 'Windows 系统原生便携式部署工具',
+                icon: 'media/Create a Windows To Go workspace Setup.png',
+                downloadUrl: 'files/Create a Windows To Go workspace Setup.exe',
+                type: '系统安装与工具',
+                system: 'Windows 10 1909 以上的 Windows 64位操作系统',
+                source: 'Windows 10 1909 原生提取',
+                description: `
+                    <p>本程序从 Windows 10 Version 1909 官方镜像中原生提取，为最后一个原生内置 Windows To Go 制作工具的官方功能封装。</p>
+                    <p style="margin-top: 8px;">它可以帮助你将完整的 Windows 操作系统快速部署并安装至移动硬盘或 U 盘等便携式设备中，打造专属于你的随身 Windows To Go 工作区。</p>
+                `
+            }
+        };
+
+        /* 唤起应用详情并加载对应的应用信息 */
+        function showAppDetail(appId) {
+            const app = appDatabase[appId];
+            if (!app) return;
+
+            document.getElementById('res-detail-win-title').innerText = `应用详情 - ${app.title}`;
+            document.getElementById('res-detail-icon').src = app.icon;
+            document.getElementById('res-detail-icon').alt = `${app.title} Logo`;
+            document.getElementById('res-detail-name').innerText = app.title;
+            document.getElementById('res-detail-tagline').innerText = app.tagline;
+            document.getElementById('res-detail-dl-btn').href = app.downloadUrl;
+            document.getElementById('res-detail-type').innerText = app.type;
+            document.getElementById('res-detail-sys').innerText = app.system;
+            document.getElementById('res-detail-source').innerText = app.source;
+            document.getElementById('res-detail-desc').innerHTML = app.description;
+
+            wm.open('res-detail');
+        }
 
         class WindowManager {
             constructor() {
@@ -942,7 +1124,7 @@
         }
 
         const wm = new WindowManager();
-        ['home', 'env', 'resources', 'blank', 'about'].forEach(id => wm.register(id));
+        ['home', 'env', 'resources', 'res-detail', 'blank', 'about'].forEach(id => wm.register(id));
         wm.open('home');
 
         function updateClock() {
@@ -1124,14 +1306,17 @@
 
         const dlManager = new WebOSDownloadManager();
 
-        // 绑定资源中心所有下载按钮
-        document.querySelectorAll('.resource-card .action-btn[download]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+        // 动态绑定全局带 [download] 属性的下载链接与按钮
+        document.addEventListener('click', (e) => {
+            const downloadBtn = e.target.closest('a[download], button[download]');
+            if (downloadBtn) {
                 e.preventDefault();
-                const url = btn.getAttribute('href');
-                const filename = url.split('/').pop() || 'download_file';
-                dlManager.startDownload(url, filename);
-            });
+                const url = downloadBtn.getAttribute('href');
+                if (url && url !== '#') {
+                    const filename = url.split('/').pop() || 'download_file';
+                    dlManager.startDownload(url, filename);
+                }
+            }
         });
     </script>
 </body>
