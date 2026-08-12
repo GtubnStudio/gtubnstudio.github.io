@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Gtubn Studio Web OS</title>
 
     <link rel="icon" href="media/weblogo.png" type="image/png">
@@ -29,6 +29,11 @@
             
             --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
             --font-code: "Cascadia Code", "Fira Code", Consolas, Monaco, "Courier New", monospace;
+
+            /* 微调动画曲线：移除溢出超越量，保持平滑微幅过度 */
+            --ease-spring: cubic-bezier(0.25, 1, 0.5, 1);
+            --ease-out-back: cubic-bezier(0.25, 1, 0.5, 1);
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * { 
@@ -46,7 +51,7 @@
         }
 
         #desktop {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 48px;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 64px;
             z-index: 1; pointer-events: none;
         }
 
@@ -58,16 +63,16 @@
             display: flex; flex-direction: column; overflow: hidden;
             
             opacity: 0; 
-            transform: scale(0.88) translateY(18px); 
+            transform: scale(0.95) translateY(10px); 
             pointer-events: none;
             z-index: 10;
 
-            transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                        width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-                        height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-                        top 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-                        left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.22s var(--ease-smooth),
+                        transform 0.22s var(--ease-smooth),
+                        width 0.25s var(--ease-smooth),
+                        height 0.25s var(--ease-smooth),
+                        top 0.25s var(--ease-smooth),
+                        left 0.25s var(--ease-smooth);
         }
         
         .window.active { 
@@ -82,7 +87,7 @@
         
         .window.minimized { 
             opacity: 0; 
-            transform: scale(0.7) translateY(60px); 
+            transform: scale(0.9) translateY(30px); 
             pointer-events: none; 
         }
 
@@ -118,13 +123,13 @@
         .window-controls { display: flex; gap: 9px; align-items: center; }
         .win-btn {
             width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer;
-            opacity: 0.88; transition: opacity 0.15s; display: flex; align-items: center; justify-content: center;
+            opacity: 0.88; transition: opacity 0.15s, transform 0.15s; display: flex; align-items: center; justify-content: center;
             touch-action: manipulation;
         }
         .win-btn-close { background: #ff5f56; }
         .win-btn-min { background: #ffbd2e; }
         .win-btn-max { background: #27c93f; }
-        .win-btn:hover { opacity: 1; }
+        .win-btn:hover { opacity: 1; transform: scale(1.06); }
 
         .window-body { 
             flex: 1; padding: 16px; overflow-y: auto; color: var(--text); position: relative; 
@@ -133,56 +138,138 @@
         .window-body::-webkit-scrollbar { width: 6px; }
         .window-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
 
+        /* 完全无边框透明，中央浮动居中 */
         #taskbar {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 48px;
-            background: var(--taskbar-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border-top: 1px solid var(--border); z-index: 9999;
-            display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
+            position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); height: 48px;
+            background: transparent; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+            z-index: 9999; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0;
+            max-width: 90vw; pointer-events: none;
+            transition: all 0.3s var(--ease-smooth);
         }
-        .taskbar-left, .taskbar-right { display: flex; align-items: center; gap: 8px; }
-        .taskbar-center { display: flex; align-items: center; gap: 8px; flex: 1; margin: 0 12px; overflow-x: auto; }
+        #taskbar > * { pointer-events: auto; }
+
+        .taskbar-left, .taskbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .taskbar-center { 
+            display: flex; align-items: center; gap: 8px; overflow-x: auto; flex-shrink: 1; 
+            padding: 8px 6px; margin: -8px 0; scroll-behavior: smooth;
+        }
         .taskbar-center::-webkit-scrollbar { display: none; }
 
         .start-btn {
-            display: flex; align-items: center; padding: 6px 12px; border-radius: 6px;
+            display: flex; align-items: center; padding: 6px 12px; border-radius: 8px;
             background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent);
             color: var(--accent); font-size: 13px; font-weight: 700; font-family: var(--font-ui); cursor: pointer;
-            transition: all 0.15s ease; flex-shrink: 0; gap: 6px;
-            touch-action: manipulation;
+            transition: transform 0.25s var(--ease-spring), background 0.2s, color 0.2s, box-shadow 0.25s; flex-shrink: 0; gap: 6px;
+            touch-action: manipulation; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
-        .start-btn svg { width: 15px; height: 15px; fill: var(--accent); }
-        .start-btn:hover { background: var(--accent); color: #fff; }
+        .start-btn svg { width: 15px; height: 15px; fill: var(--accent); transition: fill 0.2s; }
+        .start-btn:hover { background: var(--accent); color: #fff; transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 16px rgba(88, 166, 255, 0.4); }
         .start-btn:hover svg { fill: #fff; }
+        .start-btn:active { transform: translateY(-1px) scale(0.98); }
 
+        /* 极致优化的应用图标样式与小幅平合弹跳/退场动画 */
         .task-item {
+            position: relative;
             display: flex; align-items: center; justify-content: center;
-            width: 36px; height: 36px; border-radius: 6px; background: var(--card-inner);
-            border: 1px solid var(--card-inner-border); cursor: pointer; transition: all 0.15s ease;
-            flex-shrink: 0; touch-action: manipulation;
+            width: 38px; height: 38px; border-radius: 10px; background: var(--panel-solid);
+            border: 1px solid var(--card-inner-border); cursor: pointer;
+            flex-shrink: 0; touch-action: manipulation; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+            animation: taskPopIn 0.28s var(--ease-smooth);
+            transition: transform 0.25s var(--ease-spring), 
+                        background 0.2s, 
+                        border-color 0.2s, 
+                        box-shadow 0.25s;
+            will-change: transform, opacity;
         }
-        .task-item svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; flex-shrink: 0; }
-        .task-item svg circle.dot-fill { fill: var(--muted); stroke: none; }
-        .task-item:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.25); }
-        .task-item:hover svg { stroke: var(--text); }
+        
+        /* 底部聚焦指示点 */
+        .task-item::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0;
+            transform: scale(0);
+            transition: transform 0.25s var(--ease-spring), opacity 0.2s;
+            box-shadow: 0 0 6px var(--accent);
+        }
+
+        .task-item svg { width: 18px; height: 18px; stroke: var(--muted); fill: none; flex-shrink: 0; transition: stroke 0.2s, transform 0.25s var(--ease-spring); }
+        .task-item svg circle.dot-fill { fill: var(--muted); stroke: none; transition: fill 0.2s; }
+        
+        .task-item:hover { 
+            background: rgba(255, 255, 255, 0.14); 
+            border-color: rgba(255, 255, 255, 0.35); 
+            transform: translateY(-2px) scale(1.03); 
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+        }
+        .task-item:hover svg { stroke: var(--text); transform: scale(1.04); }
         .task-item:hover svg circle.dot-fill { fill: var(--text); }
-        .task-item.active { background: rgba(88, 166, 255, 0.18); border-color: var(--accent); }
+        .task-item:active { transform: translateY(-1px) scale(0.97); }
+
+        .task-item.active { 
+            background: rgba(88, 166, 255, 0.22); 
+            border-color: var(--accent); 
+            box-shadow: 0 0 16px var(--accent-glow), 0 4px 14px rgba(0, 0, 0, 0.4); 
+        }
         .task-item.active svg { stroke: #79c0ff; }
         .task-item.active svg circle.dot-fill { fill: #79c0ff; }
+        .task-item.active::after { opacity: 1; transform: scale(1); }
+
+        /* 图标出现动画：微幅提升，不冲出边界 */
+        @keyframes taskPopIn {
+            0% { 
+                opacity: 0; 
+                transform: scale(0.92) translateY(6px); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: scale(1) translateY(0); 
+            }
+        }
+
+        /* 图标移除淡出动画类 */
+        .task-item.removing {
+            animation: taskPopOut 0.2s var(--ease-smooth) forwards !important;
+            pointer-events: none;
+        }
+
+        @keyframes taskPopOut {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.9) translateY(6px); }
+        }
 
         .tray-item { 
             display: flex; align-items: center; gap: 6px;
-            font-size: 12.5px; font-family: var(--font-ui); color: var(--text); padding: 4px 10px; border-radius: 6px; 
-            background: var(--card-inner); border: 1px solid var(--card-inner-border); flex-shrink: 0; 
+            font-size: 12.5px; font-family: var(--font-ui); color: var(--text); padding: 6px 10px; border-radius: 8px; 
+            background: var(--panel-solid); border: 1px solid var(--card-inner-border); flex-shrink: 0; 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.25s var(--ease-spring);
         }
+        .tray-item:hover { transform: translateY(-1px); }
         .tray-item svg { width: 14px; height: 14px; stroke: var(--accent); fill: none; }
 
+        /* 开始菜单调整 */
         #start-menu {
-            position: absolute; bottom: 54px; left: 10px; width: 270px;
+            position: absolute; bottom: 68px; left: 50%; transform: translateX(-50%); width: 270px;
             background: var(--panel-solid); border: 1px solid var(--border);
-            border-radius: 10px; padding: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+            border-radius: 12px; padding: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.65);
             z-index: 10000; display: none; flex-direction: column; gap: 8px;
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
-        #start-menu.active { display: flex; animation: slideUp 0.15s ease forwards; }
+        #start-menu.active { 
+            display: flex; 
+            animation: slideUp 0.22s var(--ease-smooth) forwards; 
+        }
+        #start-menu.closing {
+            animation: slideDown 0.18s var(--ease-smooth) forwards;
+        }
 
         .start-header { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .start-app-btn {
@@ -190,12 +277,12 @@
             height: 36px; padding-left: 12px; border-radius: 6px;
             background: var(--card-inner); border: 1px solid var(--card-inner-border);
             color: var(--text); font-size: 12.5px; font-family: var(--font-ui); font-weight: 500; cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.2s var(--ease-smooth);
             touch-action: manipulation;
         }
-        .start-app-btn svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; flex-shrink: 0; }
+        .start-app-btn svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; flex-shrink: 0; transition: stroke 0.2s; }
         .start-app-btn svg circle.dot-fill { fill: currentColor; stroke: none; }
-        .start-app-btn:hover { background: rgba(88, 166, 255, 0.15); border-color: var(--accent); color: var(--accent); }
+        .start-app-btn:hover { background: rgba(88, 166, 255, 0.15); border-color: var(--accent); color: var(--accent); transform: translateX(2px); }
         .start-app-btn:hover svg { stroke: var(--accent); }
         .start-app-btn:hover svg circle.dot-fill { fill: var(--accent); }
 
@@ -218,8 +305,8 @@
         .badge.online { background: rgba(46, 160, 67, 0.2); color: #56d364; }
         .badge.offline { background: rgba(248, 81, 73, 0.2); color: #f85149; }
 
-        .action-btn { background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--font-ui); font-weight: 600; cursor: pointer; flex-shrink: 0; touch-action: manipulation; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-        .action-btn:hover { background: var(--accent); color: #fff; }
+        .action-btn { background: rgba(88, 166, 255, 0.15); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--font-ui); font-weight: 600; cursor: pointer; flex-shrink: 0; touch-action: manipulation; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s var(--ease-smooth); }
+        .action-btn:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
 
         .ua-box { 
             padding: 10px; background: var(--card-inner); border: 1px solid var(--card-inner-border); 
@@ -233,9 +320,9 @@
         .embedded-iframe { width: 100%; height: 100%; border: none; }
         
         .social-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
-        .social-btn { display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; border-radius: 6px; background: var(--card-inner); border: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 12px; font-family: var(--font-ui); font-weight: 500; touch-action: manipulation; }
+        .social-btn { display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; border-radius: 6px; background: var(--card-inner); border: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 12px; font-family: var(--font-ui); font-weight: 500; touch-action: manipulation; transition: all 0.2s; }
         .social-btn svg { width: 14px; height: 14px; fill: currentColor; }
-        .social-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .social-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 
         .resource-card {
             background: var(--card-inner);
@@ -319,10 +406,11 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: opacity 0.15s;
+            transition: opacity 0.15s, transform 0.2s var(--ease-smooth);
         }
         .store-btn-download:hover {
-            opacity: 0.9;
+            opacity: 0.95;
+            transform: translateY(-1px);
         }
         .store-meta-grid {
             display: grid;
@@ -357,13 +445,22 @@
             border: 1px solid var(--card-inner-border);
         }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        /* 菜单弹窗微幅平滑展开，收窄缩放基准 */
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translate(-50%, 8px) scale(0.97); } 
+            to { opacity: 1; transform: translate(-50%, 0) scale(1); } 
+        }
 
-        /* 系统通知滑动动画 */
+        @keyframes slideDown {
+            from { opacity: 1; transform: translate(-50%, 0) scale(1); }
+            to { opacity: 0; transform: translate(-50%, 8px) scale(0.97); }
+        }
+
+        /* 系统通知滑动动画微调 */
         @keyframes toastSlideIn {
             0% {
                 opacity: 0;
-                transform: translateX(120px) scale(0.92);
+                transform: translateX(20px) scale(0.96);
             }
             100% {
                 opacity: 1;
@@ -378,15 +475,15 @@
             }
             100% {
                 opacity: 0;
-                transform: translateX(140px) scale(0.88);
+                transform: translateX(20px) scale(0.96);
             }
         }
 
         /* 下载管理右下角通知弹窗容器 */
         #download-manager-container {
             position: absolute;
-            bottom: 58px;
-            right: 14px;
+            bottom: 68px;
+            right: 16px;
             z-index: 10001;
             display: flex;
             flex-direction: column;
@@ -403,7 +500,7 @@
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(18px);
             pointer-events: auto;
-            animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: toastSlideIn 0.28s var(--ease-smooth) forwards;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -411,10 +508,9 @@
         }
 
         .download-toast.closing {
-            animation: toastSlideOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: toastSlideOut 0.2s var(--ease-smooth) forwards;
         }
 
-        /* 系统通知顶栏样式 */
         .toast-system-header {
             display: flex;
             align-items: center;
@@ -469,21 +565,48 @@
             max-width: 210px;
         }
 
-        /* 移动端基础适配 */
+        /* 移动端全面适配调整 */
         @media (max-width: 768px) {
             .window { 
                 width: 100vw !important; 
                 left: 0 !important; 
+                max-height: calc(100vh - 64px) !important;
                 border-radius: 0 !important; 
             }
             .window-controls { gap: 12px; }
             .win-btn { width: 15px; height: 15px; }
-            #start-menu { width: calc(100vw - 20px); left: 10px; right: 10px; bottom: 54px; }
+            #taskbar { 
+                bottom: 8px; 
+                left: 0 !important;
+                transform: none !important;
+                width: 100% !important;
+                max-width: 100vw !important; 
+                justify-content: space-between !important;
+                padding-left: max(8px, env(safe-area-inset-left)) !important;
+                padding-right: max(8px, env(safe-area-inset-right)) !important;
+                gap: 4px;
+            }
+            .start-btn { 
+                padding: 5px 8px; 
+                font-size: 11.5px; 
+                gap: 4px;
+            }
+            .start-btn svg { width: 13px; height: 13px; }
+            #start-menu { width: calc(100vw - 24px); left: 50%; transform: translateX(-50%); bottom: 68px; }
             .info-grid { grid-template-columns: repeat(2, 1fr); }
-            #taskbar-apps { display: flex !important; margin: 0 6px; }
-            .task-item { width: 34px; height: 34px; }
-            .tray-item { font-size: 11.5px; padding: 2px 6px; }
-            #download-manager-container { right: 10px; left: 10px; }
+            #taskbar-apps { 
+                display: flex !important; 
+                margin: 0 2px; 
+                gap: 4px;
+                padding: 4px 2px;
+                flex: 1;
+                justify-content: center;
+            }
+            .task-item { width: 32px; height: 32px; }
+            .task-item svg { width: 16px; height: 16px; }
+            .tray-item { font-size: 11px; padding: 4px 6px; gap: 4px; }
+            .tray-item svg { width: 12px; height: 12px; }
+            #download-manager-container { right: 12px; left: 12px; bottom: 68px; }
             .download-toast { width: 100%; }
         }
     </style>
@@ -596,7 +719,7 @@
         </div>
     </div>
 
-    <!-- 窗口 3.5: Resource Details (通用商店风格资源详情窗口) -->
+    <!-- 窗口 3.5: Resource Details -->
     <div class="window" id="win-res-detail" style="width: 540px; height: 430px; top: 150px; left: 260px;">
         <div class="window-header" onmousedown="wm.startDrag(event, 'res-detail')" ontouchstart="wm.startDrag(event, 'res-detail')" ondblclick="wm.maximize('res-detail')">
             <div class="window-title">
@@ -722,7 +845,7 @@
                 环境检测
             </div>
             <div class="start-app-btn" onclick="wm.open('resources'); closeStartMenu();">
-                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" fill="none"></path><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" fill="none"></polyline><line x1="12" y1="15" x2="12" y2="3" stroke-width="2"></line></svg>
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" fill="none"></path><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" fill="none"></polyline><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2"></line></svg>
                 资源中心
             </div>
             <div class="start-app-btn" onclick="wm.open('blank'); closeStartMenu();">
@@ -758,7 +881,6 @@
     <script>
         window.addEventListener('contextmenu', (e) => { e.preventDefault(); }, false);
 
-        /* 存储可调用应用的数据集合 */
         const appDatabase = {
             'wtg': {
                 title: '创建 Windows To Go 工作区',
@@ -770,12 +892,11 @@
                 source: 'Windows 10 1909 原生提取',
                 description: `
                     <p>本程序从 Windows 10 Version 1909 官方镜像中原生提取，为最后一个原生内置 Windows To Go 制作工具的官方功能封装。</p>
-                    <p style="margin-top: 8px;">它可以帮助你将完整的 Windows 操作系统快速部署并安装至移动硬盘或 U 盘等便携式设备中，打造专属于你的随身 Windows To Go 工作区。</p>
+                    <p style="margin-top: 8px;">它可以帮助你将完整的 Windows 操作系统快速部署并安装至移动硬盘或 U 盘等便叠式设备中，打造专属于你的随身 Windows To Go 工作区。</p>
                 `
             }
         };
 
-        /* 唤起应用详情并加载对应的应用信息 */
         function showAppDetail(appId) {
             const app = appDatabase[appId];
             if (!app) return;
@@ -799,7 +920,6 @@
                 this.windows = {};
                 this.topZ = 100;
                 
-                // 拖拽相关属性
                 this.dragTarget = null;
                 this.dragWinId = null;
                 this.dragOffset = { x: 0, y: 0 };
@@ -807,7 +927,6 @@
                 this.mousePos = { x: 0, y: 0 };
                 this.activeId = null;
 
-                // 维护移动端窗口激活顺序队列与响应式标记
                 this.mobileActiveOrder = [];
                 this.isMobile = window.innerWidth <= 768;
 
@@ -896,7 +1015,7 @@
                 if (!win.isMaximized) {
                     win.rect = { width: win.el.style.width, height: win.el.style.height, top: win.el.style.top, left: win.el.style.left };
                     win.el.style.width = '100vw';
-                    win.el.style.height = 'calc(100vh - 48px)';
+                    win.el.style.height = 'calc(100vh - 64px)';
                     win.el.style.top = '0px';
                     win.el.style.left = '0px';
                     win.isMaximized = true;
@@ -989,7 +1108,7 @@
                     const win = this.windows[activeWins[0]];
                     if (win) {
                         win.el.style.top = '0px';
-                        win.el.style.height = 'calc(100vh - 48px)';
+                        win.el.style.height = 'calc(100vh - 64px)';
                     }
                 } 
                 else if (activeWins.length === 2) {
@@ -998,11 +1117,11 @@
 
                     if (topWin) {
                         topWin.el.style.top = '0px';
-                        topWin.el.style.height = 'calc((100vh - 48px) / 2)';
+                        topWin.el.style.height = 'calc((100vh - 64px) / 2)';
                     }
                     if (bottomWin) {
-                        bottomWin.el.style.top = 'calc((100vh - 48px) / 2)';
-                        bottomWin.el.style.height = 'calc((100vh - 48px) / 2)';
+                        bottomWin.el.style.top = 'calc((100vh - 64px) / 2)';
+                        bottomWin.el.style.height = 'calc((100vh - 64px) / 2)';
                     }
                 }
             }
@@ -1029,13 +1148,13 @@
                                 const rect = this.dragTarget.getBoundingClientRect();
                                 const winWidth = rect.width;
                                 const headerHeight = 46;
-                                const taskbarHeight = 48;
+                                const taskbarReserved = 64;
                                 const minVisibleX = 80;
 
                                 let left = this.mousePos.x - this.dragOffset.x;
                                 let top = this.mousePos.y - this.dragOffset.y;
 
-                                top = Math.max(0, Math.min(top, window.innerHeight - taskbarHeight - headerHeight));
+                                top = Math.max(0, Math.min(top, window.innerHeight - taskbarReserved - headerHeight));
                                 left = Math.max(-winWidth + minVisibleX, Math.min(left, window.innerWidth - minVisibleX));
 
                                 this.dragTarget.style.left = `${left}px`;
@@ -1085,7 +1204,7 @@
                     let left = parseFloat(win.el.style.left) || 0;
                     let top = parseFloat(win.el.style.top) || 0;
 
-                    const maxTop = window.innerHeight - 48 - 46;
+                    const maxTop = window.innerHeight - 64 - 46;
                     const maxLeft = window.innerWidth - 80;
                     const minLeft = -rect.width + 80;
 
@@ -1102,22 +1221,59 @@
             renderTaskbar() {
                 const container = document.getElementById('taskbar-apps');
                 if (!container) return;
-                container.innerHTML = '';
 
-                Object.values(this.windows).forEach(win => {
-                    if (win.el.classList.contains('active')) {
-                        const titleEl = win.el.querySelector('.window-title');
-                        const iconSvg = titleEl.querySelector('svg') ? titleEl.querySelector('svg').outerHTML : '';
-                        const titleText = titleEl.querySelector('span') ? titleEl.querySelector('span').innerText : titleEl.innerText;
+                const activeApps = Object.values(this.windows).filter(win => win.el.classList.contains('active'));
+                
+                // 1. 优雅处理移除动画 (Smooth Out Animation)
+                Array.from(container.children).forEach(child => {
+                    const appId = child.dataset.appId;
+                    if (!activeApps.some(w => w.id === appId) && !child.classList.contains('removing')) {
+                        child.classList.add('removing');
+                        if (child.dataset.timerId) clearTimeout(Number(child.dataset.timerId));
                         
-                        const isFocused = win.el.classList.contains('focused') && !win.isMinimized;
+                        const timerId = setTimeout(() => {
+                            child.remove();
+                        }, 200); // 匹配 taskPopOut 动画时长
+                        child.dataset.timerId = timerId;
+                    }
+                });
 
-                        const item = document.createElement('div');
-                        item.className = `task-item ${isFocused ? 'active' : ''}`;
+                // 2. 动态加载/同步激活状态
+                activeApps.forEach(win => {
+                    const titleEl = win.el.querySelector('.window-title');
+                    const iconSvg = titleEl.querySelector('svg') ? titleEl.querySelector('svg').outerHTML : '';
+                    const titleText = titleEl.querySelector('span') ? titleEl.querySelector('span').innerText : titleEl.innerText;
+                    const isFocused = win.el.classList.contains('focused') && !win.isMinimized;
+
+                    let item = container.querySelector(`[data-app-id="${win.id}"]`);
+                    if (!item) {
+                        item = document.createElement('div');
+                        item.className = 'task-item';
+                        item.dataset.appId = win.id;
                         item.title = titleText;
                         item.innerHTML = `${iconSvg}`;
                         item.onclick = () => this.toggleTask(win.id);
+                        
+                        // 动画播放完成后移除 keyframe 属性，防止 transform 样式锁定影响 hover/active 弹性
+                        item.addEventListener('animationend', (e) => {
+                            if (e.animationName === 'taskPopIn') {
+                                item.style.animation = 'none';
+                            }
+                        });
+
                         container.appendChild(item);
+                    } else if (item.classList.contains('removing')) {
+                        item.classList.remove('removing');
+                        if (item.dataset.timerId) {
+                            clearTimeout(Number(item.dataset.timerId));
+                            delete item.dataset.timerId;
+                        }
+                    }
+
+                    if (isFocused) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
                     }
                 });
             }
@@ -1139,11 +1295,23 @@
                 e.stopPropagation();
                 if (e.type === 'touchstart') e.preventDefault();
             }
-            document.getElementById('start-menu').classList.toggle('active');
+            const menu = document.getElementById('start-menu');
+            if (menu.classList.contains('active') && !menu.classList.contains('closing')) {
+                closeStartMenu();
+            } else {
+                menu.classList.remove('closing');
+                menu.classList.add('active');
+            }
         }
 
         function closeStartMenu() {
-            document.getElementById('start-menu').classList.remove('active');
+            const menu = document.getElementById('start-menu');
+            if (menu.classList.contains('active') && !menu.classList.contains('closing')) {
+                menu.classList.add('closing');
+                setTimeout(() => {
+                    menu.classList.remove('active', 'closing');
+                }, 180);
+            }
         }
 
         const dismissStartMenuHandler = (e) => {
@@ -1243,14 +1411,12 @@
             wm.clampAllWindows();
         });
 
-        /* WebOS 下载管理器（移除内存缓存，直接唤起浏览器原生下载） */
         class WebOSDownloadManager {
             constructor() {
                 this.container = document.getElementById('download-manager-container');
             }
 
             startDownload(url, filename) {
-                // 1. 触发浏览器原生下载
                 const a = document.createElement('a');
                 a.href = encodeURI(url);
                 a.download = filename;
@@ -1259,7 +1425,6 @@
                 a.click();
                 document.body.removeChild(a);
 
-                // 2. 弹出 WebOS 系统通知弹窗（保留UI与动画）
                 this.showToast(filename);
             }
 
@@ -1289,7 +1454,6 @@
                 `;
                 this.container.appendChild(toast);
 
-                // 5 秒后自动平滑淡出关闭
                 setTimeout(() => {
                     this.closeToast(taskId);
                 }, 5000);
@@ -1299,14 +1463,13 @@
                 const toast = document.getElementById(taskId);
                 if (toast && !toast.classList.contains('closing')) {
                     toast.classList.add('closing');
-                    setTimeout(() => toast.remove(), 250);
+                    setTimeout(() => toast.remove(), 200);
                 }
             }
         }
 
         const dlManager = new WebOSDownloadManager();
 
-        // 动态绑定全局带 [download] 属性的下载链接与按钮
         document.addEventListener('click', (e) => {
             const downloadBtn = e.target.closest('a[download], button[download]');
             if (downloadBtn) {
