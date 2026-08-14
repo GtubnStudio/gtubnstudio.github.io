@@ -456,115 +456,6 @@
             to { opacity: 0; transform: translate(-50%, 8px) scale(0.97); }
         }
 
-        /* 系统通知滑动动画微调 */
-        @keyframes toastSlideIn {
-            0% {
-                opacity: 0;
-                transform: translateX(20px) scale(0.96);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-
-        @keyframes toastSlideOut {
-            0% {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateX(20px) scale(0.96);
-            }
-        }
-
-        /* 下载管理右下角通知弹窗容器 */
-        #download-manager-container {
-            position: absolute;
-            bottom: 68px;
-            right: 16px;
-            z-index: 10001;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-
-        .download-toast {
-            width: 320px;
-            background: var(--panel-solid);
-            border: 1px solid var(--border-glow);
-            border-radius: 10px;
-            padding: 12px 14px;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(18px);
-            pointer-events: auto;
-            animation: toastSlideIn 0.28s var(--ease-smooth) forwards;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            will-change: transform, opacity;
-        }
-
-        .download-toast.closing {
-            animation: toastSlideOut 0.2s var(--ease-smooth) forwards;
-        }
-
-        .toast-system-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 11px;
-            color: var(--muted);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 6px;
-            margin-bottom: 2px;
-        }
-
-        .toast-system-title {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 600;
-            color: var(--accent);
-            letter-spacing: 0.3px;
-        }
-
-        .toast-close-btn {
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-size: 16px;
-            line-height: 1;
-            cursor: pointer;
-            padding: 0 2px;
-            transition: color 0.15s ease;
-        }
-
-        .toast-close-btn:hover {
-            color: var(--text);
-        }
-
-        .download-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .download-title {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 210px;
-        }
-
         /* 移动端全面适配调整 */
         @media (max-width: 768px) {
             .window { 
@@ -606,8 +497,6 @@
             .task-item svg { width: 16px; height: 16px; }
             .tray-item { font-size: 11px; padding: 4px 6px; gap: 4px; }
             .tray-item svg { width: 12px; height: 12px; }
-            #download-manager-container { right: 12px; left: 12px; bottom: 68px; }
-            .download-toast { width: 100%; }
         }
     </style>
 </head>
@@ -858,9 +747,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 下载管理右下角弹窗容器 -->
-    <div id="download-manager-container"></div>
 
     <!-- 底部任务栏 -->
     <footer id="taskbar">
@@ -1409,77 +1295,6 @@
 
         window.addEventListener('resize', () => {
             wm.clampAllWindows();
-        });
-
-        class WebOSDownloadManager {
-            constructor() {
-                this.container = document.getElementById('download-manager-container');
-            }
-
-            startDownload(url, filename) {
-                const a = document.createElement('a');
-                a.href = encodeURI(url);
-                a.download = filename;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-
-                this.showToast(filename);
-            }
-
-            showToast(filename) {
-                const taskId = 'toast_' + Date.now();
-                const toast = document.createElement('div');
-                toast.className = 'download-toast';
-                toast.id = taskId;
-                toast.innerHTML = `
-                    <div class="toast-system-header">
-                        <div class="toast-system-title">
-                            <svg style="width:12px;height:12px;stroke:var(--accent);fill:none;" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2"></path><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2"></path></svg>
-                            <span>下载管理通知</span>
-                        </div>
-                        <button class="toast-close-btn" onclick="dlManager.closeToast('${taskId}')" title="关闭">&times;</button>
-                    </div>
-                    <div class="download-header">
-                        <div class="download-title">
-                            <svg style="width:14px;height:14px;stroke:var(--accent);fill:none;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2"></path><polyline points="7 10 12 15 17 10" stroke-width="2"></polyline><line x1="12" y1="15" x2="12" y2="3" stroke-width="2"></line></svg>
-                            <span>${filename}</span>
-                        </div>
-                        <span class="badge online">已启动</span>
-                    </div>
-                    <div style="font-size: 11.5px; color: var(--muted); margin-top: 4px;">
-                        浏览器下载管理器正在处理，请在浏览器下载栏查看进度。
-                    </div>
-                `;
-                this.container.appendChild(toast);
-
-                setTimeout(() => {
-                    this.closeToast(taskId);
-                }, 5000);
-            }
-
-            closeToast(taskId) {
-                const toast = document.getElementById(taskId);
-                if (toast && !toast.classList.contains('closing')) {
-                    toast.classList.add('closing');
-                    setTimeout(() => toast.remove(), 200);
-                }
-            }
-        }
-
-        const dlManager = new WebOSDownloadManager();
-
-        document.addEventListener('click', (e) => {
-            const downloadBtn = e.target.closest('a[download], button[download]');
-            if (downloadBtn) {
-                e.preventDefault();
-                const url = downloadBtn.getAttribute('href');
-                if (url && url !== '#') {
-                    const filename = url.split('/').pop() || 'download_file';
-                    dlManager.startDownload(url, filename);
-                }
-            }
         });
     </script>
 </body>
