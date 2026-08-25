@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gtubn Studio 的网站 - 资源中心</title>
+
+  <link rel="icon" href="media/weblogo.png" type="image/png">
+  <link rel="icon" href="media/weblogo.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" sizes="180x180" href="media/weblogo.png">
+  <meta name="apple-mobile-web-app-title" content="Gtubn Studio">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="./assets/css/material-symbols.css">
+
+  <script>
+    (function() {
+      const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      if (systemPrefersLight) {
+        document.documentElement.classList.add('light-mode');
+      }
+    })();
+  </script>
+
+  <style>
+    :root {
+      --md-sys-color-background: #121316;
+      --md-sys-color-surface: #121316;
+      --md-sys-color-surface-container: #1a1b1f;
+      --md-sys-color-surface-container-high: #202125;
+      --md-sys-color-on-surface: #e2e2e6;
+      --md-sys-color-on-surface-variant: #c4c6cf;
+      --md-sys-color-outline: #44474f;
+
+      --md-sys-color-primary: #e5a93c;
+      --md-sys-color-primary-container: rgba(229, 169, 60, 0.16);
+      --md-sys-color-on-primary: #000000;
+
+      --md-shape-corner-full: 9999px;
+      --md-shape-corner-large: 28px;
+      --md-shape-corner-medium: 12px;
+
+      --md-easing: cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    html.light-mode {
+      --md-sys-color-background: #fbf7f0;
+      --md-sys-color-surface: #fbf7f0;
+      --md-sys-color-surface-container: #f3ece0;
+      --md-sys-color-surface-container-high: #eae1d0;
+      --md-sys-color-on-surface: #1c1b1e;
+      --md-sys-color-on-surface-variant: #49454f;
+      --md-sys-color-outline: #c8bdab;
+
+      --md-sys-color-primary: #e5a93c;
+      --md-sys-color-primary-container: rgba(138, 90, 0, 0.12);
+      --md-sys-color-on-primary: #000000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--md-sys-color-background);
+      color: var(--md-sys-color-on-surface);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background-color 0.3s var(--md-easing), color 0.3s var(--md-easing);
+    }
+
+    .ripple-surface {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.22);
+      transform: scale(0);
+      animation: ripple-anim 800ms var(--md-easing) forwards;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    html.light-mode .ripple {
+      background-color: rgba(0, 0, 0, 0.15);
+    }
+
+    @keyframes ripple-anim {
+      to {
+        transform: scale(3.5);
+        opacity: 0;
+      }
+    }
+
+    .top-app-bar {
+      height: 64px;
+      background-color: var(--md-sys-color-surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--md-sys-color-outline);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .app-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--md-shape-corner-full);
+      border: none;
+      background: transparent;
+      color: var(--md-sys-color-on-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, color 0.2s, transform 0.15s var(--md-easing);
+    }
+
+    .icon-btn:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+    }
+
+    html.light-mode .icon-btn:hover {
+      background-color: rgba(0, 0, 0, 0.06);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.25rem;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .main-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-header-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--md-sys-color-primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 应用列表卡片 */
+    .app-item-card {
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .app-item-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .app-item-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      object-fit: cover;
+      background-color: var(--md-sys-color-surface-container-high);
+      flex-shrink: 0;
+    }
+
+    .app-item-info h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .app-item-info p {
+      font-size: 0.875rem;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .btn-detail {
+      padding: 8px 18px;
+      border-radius: var(--md-shape-corner-full);
+      border: 1px solid var(--md-sys-color-primary);
+      background: transparent;
+      color: var(--md-sys-color-primary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s var(--md-easing), transform 0.15s var(--md-easing);
+    }
+
+    .btn-detail:hover {
+      background-color: var(--md-sys-color-primary-container);
+    }
+
+    .btn-detail:active {
+      transform: scale(0.94);
+    }
+
+    .disclaimer-card {
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .disclaimer-card h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .disclaimer-card p {
+      font-size: 0.8125rem;
+      color: var(--md-sys-color-on-surface-variant);
+      line-height: 1.5;
+    }
+
+    /* Modal 弹窗及无蒙版、更暗暗色的 Backdrop */
+    .app-dialog {
+      margin: auto;
+      padding: 0;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--md-shape-corner-large);
+      background-color: var(--md-sys-color-surface-container);
+      color: var(--md-sys-color-on-surface);
+      max-width: 680px;
+      width: 90vw;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+      outline: none;
+      overflow: hidden;
+
+      opacity: 0;
+      transform: scale(0.88);
+      transition: opacity 0.28s var(--md-easing), transform 0.28s var(--md-easing), display 0.28s allow-discrete;
+    }
+
+    .app-dialog[open] {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    @starting-style {
+      .app-dialog[open] {
+        opacity: 0;
+        transform: scale(0.88);
+      }
+    }
+
+    /* 无毛玻璃蒙版，纯深色遮罩 */
+    .app-dialog::backdrop {
+      background-color: rgba(0, 0, 0, 0.75);
+      opacity: 0;
+      transition: opacity 0.28s var(--md-easing), display 0.28s allow-discrete;
+    }
+
+    .app-dialog[open]::backdrop {
+      opacity: 1;
+    }
+
+    @starting-style {
+      .app-dialog[open]::backdrop {
+        opacity: 0;
+      }
+    }
+
+    .dialog-header-bar {
+      display: flex;
+      align-items: center;
+      padding: 18px 24px 12px;
+      background-color: var(--md-sys-color-surface-container);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .dialog-header-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface-variant);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dialog-body {
+      padding: 0 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .detail-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      object-fit: cover;
+      background-color: var(--md-sys-color-surface-container-high);
+      flex-shrink: 0;
+    }
+
+    .detail-title-box h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .detail-title-box p {
+      font-size: 0.875rem;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      width: fit-content;
+      transition: opacity 0.2s, transform 0.15s var(--md-easing);
+    }
+
+    .btn-download:hover {
+      opacity: 0.88;
+    }
+
+    .btn-download:active {
+      transform: scale(0.95);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .meta-card {
+      background-color: var(--md-sys-color-surface-container-high);
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--md-shape-corner-medium);
+      padding: 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .meta-label {
+      font-size: 0.75rem;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .meta-value {
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .desc-section {
+      margin-top: 4px;
+    }
+
+    .desc-section h4 {
+      color: var(--md-sys-color-primary);
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .desc-section p {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 8px;
+    }
+
+    /* 固定底部的操作栏及关于页风格的完成按钮 */
+    .dialog-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 12px 24px 16px;
+      background-color: var(--md-sys-color-surface-container);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+    }
+
+    html.light-mode .dialog-actions {
+      border-top-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* 保持按钮字体颜色始终不变 */
+    .btn-done {
+      padding: 10px 24px;
+      border-radius: 12px;
+      border: 1px solid var(--md-sys-color-outline);
+      background-color: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s var(--md-easing), 
+                  border-color 0.2s var(--md-easing), 
+                  transform 0.15s var(--md-easing);
+    }
+
+    .btn-done:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    html.light-mode .btn-done:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .btn-done:active {
+      transform: scale(0.95);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    /* 抽屉导航样式 */
+    .drawer-scrim {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s var(--md-easing), visibility 0.4s var(--md-easing);
+      z-index: 20;
+    }
+
+    .drawer-scrim.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 300px;
+      background-color: var(--md-sys-color-surface-container);
+      z-index: 30;
+      transform: translateX(-100%);
+      transition: transform 0.4s var(--md-easing), background-color 0.3s;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      border-top-right-radius: 16px;
+      border-bottom-right-radius: 16px;
+      will-change: transform;
+    }
+
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      height: 64px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--md-sys-color-outline);
+      margin: -12px -12px 12px -12px;
+    }
+
+    .drawer-footer {
+      padding: 16px;
+      border-top: 1px solid var(--md-sys-color-outline);
+      margin: 12px -12px -12px -12px;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: var(--md-sys-color-on-surface-variant);
+      opacity: 0.8;
+    }
+
+    .drawer-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+
+    .drawer-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 56px;
+      padding: 0 16px;
+      border-radius: var(--md-shape-corner-full);
+      color: var(--md-sys-color-on-surface-variant);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.875rem;
+      margin-bottom: 4px;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: background-color 0.2s, 
+                  color 0.2s, 
+                  transform 0.4s var(--md-easing), 
+                  opacity 0.4s var(--md-easing);
+    }
+
+    .drawer.open .drawer-item {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: calc(0.04s * var(--idx) + 0.08s);
+    }
+
+    .drawer-item:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    html.light-mode .drawer-item:hover {
+      background-color: rgba(0, 0, 0, 0.06);
+    }
+
+    .drawer-item.active {
+      background-color: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-primary);
+    }
+
+    .drawer-item .material-symbols-outlined {
+      font-size: 24px;
+    }
+
+    .drawer-item.active .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1;
+    }
+
+    @media (max-width: 600px) {
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Bar -->
+  <header class="top-app-bar">
+    <div class="app-bar-left">
+      <button class="icon-btn ripple-surface" id="menuBtn" aria-label="打开导航抽屉">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div class="brand">
+        <span>Gtubn Studio 的网站 - 资源中心</span>
+      </div>
+    </div>
+
+    <button class="icon-btn ripple-surface" id="themeToggleBtn" aria-label="切换明暗主题">
+      <span class="material-symbols-outlined" id="themeIcon">light_mode</span>
+    </button>
+  </header>
+
+  <!-- Navigation Drawer -->
+  <div class="drawer-scrim" id="drawerScrim"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <span>Gtubn Studio 的网站</span>
+      </div>
+    </div>
+
+    <a href="./home.html" class="drawer-item ripple-surface" style="--idx: 1;">
+      <span class="material-symbols-outlined">home</span>
+      <span>主页</span>
+    </a>
+    <a href="./sources.html" class="drawer-item active ripple-surface" style="--idx: 2;">
+      <span class="material-symbols-outlined">folder_open</span>
+      <span>资源中心</span>
+    </a>
+    <a href="./about.html" class="drawer-item ripple-surface" style="--idx: 3;">
+      <span class="material-symbols-outlined">info</span>
+      <span>关于</span>
+    </a>
+
+    <div class="drawer-footer">
+      <p>For testing only. This is currently a BETA version and may contain bugs.</p>
+    </div>
+  </nav>
+
+  <!-- 主内容区域 -->
+  <main class="main-container">
+    
+    <div class="section-header-title">
+      <span class="material-symbols-outlined">download</span>
+      <span>软件与工具下载</span>
+    </div>
+
+    <!-- 应用条目 -->
+    <div class="app-item-card">
+      <div class="app-item-left">
+        <img src="media/CaWTGwS.png" alt="创建 Windows To Go 工作区" class="app-item-icon">
+        <div class="app-item-info">
+          <h3>创建 Windows To Go 工作区</h3>
+          <p>创建 Windows To Go 工作区 (Windows 10 1909 原生提取) 安装程序</p>
+        </div>
+      </div>
+      <button class="btn-detail ripple-surface" onclick="openAppDetail('cawtgws')">
+        <span class="material-symbols-outlined" style="font-size: 18px;">info</span>
+        <span>详情</span>
+      </button>
+    </div>
+
+    <!-- 免责声明卡片 -->
+    <div class="disclaimer-card">
+      <h4>
+        <span class="material-symbols-outlined" style="font-size: 20px; color: var(--md-sys-color-primary);">gavel</span>
+        <span>免责声明与版权提示</span>
+      </h4>
+      <p>本站软件来源于我们个人收集、原生提取或开源社区，版权归属原作者或原版权方所有。本站仅提供存储与下载服务，不承担因使用第三方软件所引起的任何直接或间接法律责任。使用相关工具前请了解用途并自行承担相应风险。</p>
+    </div>
+
+  </main>
+
+  <!-- Google 原生 Modal 通用弹窗 -->
+  <dialog class="app-dialog" id="appDetailDialog">
+    <div class="dialog-header-bar">
+      <div class="dialog-header-title">
+        <span class="material-symbols-outlined" style="font-size: 20px;">apps</span>
+        <span>应用详情</span>
+      </div>
+    </div>
+
+    <div class="dialog-body">
+      <div class="detail-header">
+        <img id="dlgIcon" src="" alt="图标" class="detail-icon">
+        <div class="detail-title-box">
+          <h2 id="dlgTitle">应用标题</h2>
+          <p id="dlgSubTitle">应用副标题</p>
+          <a id="dlgDownloadBtn" href="#" class="btn-download ripple-surface" download>
+            <span class="material-symbols-outlined">download</span>
+            <span>立即下载</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-card ripple-surface">
+          <span class="meta-label">软件类型</span>
+          <span class="meta-value" id="dlgType">-</span>
+        </div>
+        <div class="meta-card ripple-surface">
+          <span class="meta-label">适用系统</span>
+          <span class="meta-value" id="dlgSystem">-</span>
+        </div>
+        <div class="meta-card ripple-surface">
+          <span class="meta-label">来源分类</span>
+          <span class="meta-value" id="dlgSource">-</span>
+        </div>
+      </div>
+
+      <div class="desc-section">
+        <h4>
+          <span class="material-symbols-outlined" style="font-size: 20px;">description</span>
+          <span>软件介绍</span>
+        </h4>
+        <div id="dlgDescContainer"></div>
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <button class="btn-done ripple-surface" id="doneDialogBtn">完成</button>
+    </div>
+  </dialog>
+
+  <script>
+    // 1. 应用详情数据库
+    const APPS_DATA = {
+      'cawtgws': {
+        title: '创建 Windows To Go 工作区',
+        subTitle: 'Windows 系统原生便携式部署工具',
+        icon: 'media/CaWTGwS.png',
+        downloadUrl: 'sources/CaWTGwS.zip',
+        type: '系统安装与工具',
+        system: 'Windows 10 1909 以上 64位',
+        source: 'Windows 10 1909 原生提取',
+        description: [
+          '本程序从 Windows 10 Version 1909 官方镜像中原生提取，为最后一个原生内置 Windows To Go 制作工具的官方功能封装。',
+          '它可以帮助你将完整的 Windows 操作系统快速部署并安装至移动硬盘或 U 盘等便携式设备中，打造专属于你的随身 Windows To Go 工作区。'
+        ]
+      }
+    };
+
+    // 2. 明暗主题切换
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: light)');
+
+    const updateThemeIcon = () => {
+      const isLight = document.documentElement.classList.contains('light-mode');
+      themeIcon.textContent = isLight ? 'dark_mode' : 'light_mode';
+    };
+
+    updateThemeIcon();
+
+    themeToggleBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('light-mode');
+      updateThemeIcon();
+    });
+
+    colorSchemeQuery.addEventListener('change', (e) => {
+      if (e.matches) {
+        document.documentElement.classList.add('light-mode');
+      } else {
+        document.documentElement.classList.remove('light-mode');
+      }
+      updateThemeIcon();
+    });
+
+    // 3. 抽屉导航
+    const drawer = document.getElementById('drawer');
+    const drawerScrim = document.getElementById('drawerScrim');
+
+    const toggleDrawer = () => {
+      const isOpen = drawer.classList.toggle('open');
+      drawerScrim.classList.toggle('open', isOpen);
+    };
+
+    document.getElementById('menuBtn').addEventListener('click', toggleDrawer);
+    drawerScrim.addEventListener('click', toggleDrawer);
+
+    // 4. Modal 弹窗控制逻辑
+    const dialog = document.getElementById('appDetailDialog');
+    const doneDialogBtn = document.getElementById('doneDialogBtn');
+
+    function openAppDetail(appKey) {
+      const app = APPS_DATA[appKey];
+      if (!app) return;
+
+      document.getElementById('dlgIcon').src = app.icon;
+      document.getElementById('dlgIcon').alt = app.title;
+      document.getElementById('dlgTitle').textContent = app.title;
+      document.getElementById('dlgSubTitle').textContent = app.subTitle;
+      document.getElementById('dlgDownloadBtn').href = app.downloadUrl;
+      document.getElementById('dlgType').textContent = app.type;
+      document.getElementById('dlgSystem').textContent = app.system;
+      document.getElementById('dlgSource').textContent = app.source;
+
+      const descContainer = document.getElementById('dlgDescContainer');
+      descContainer.innerHTML = '';
+      app.description.forEach(text => {
+        const p = document.createElement('p');
+        p.textContent = text;
+        descContainer.appendChild(p);
+      });
+
+      dialog.showModal();
+    }
+
+    // 延迟约 300ms 关闭弹窗，让水波纹扩散完毕
+    doneDialogBtn.addEventListener('click', () => {
+      setTimeout(() => {
+        dialog.close();
+      }, 300);
+    });
+
+    dialog.addEventListener('click', (e) => {
+      const rect = dialog.getBoundingClientRect();
+      const isInDialog = (
+        rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+      );
+      if (!isInDialog) {
+        dialog.close();
+      }
+    });
+
+    // 5. 水波纹点击特效
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('.ripple-surface');
+      if (!target) return;
+
+      const circle = document.createElement('span');
+      const diameter = Math.max(target.clientWidth, target.clientHeight);
+      const radius = diameter / 2;
+      const rect = target.getBoundingClientRect();
+
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${e.clientX - rect.left - radius}px`;
+      circle.style.top = `${e.clientY - rect.top - radius}px`;
+      circle.className = 'ripple';
+
+      target.appendChild(circle);
+
+      setTimeout(() => circle.remove(), 800);
+    });
+  </script>
+
+</body>
+</html>

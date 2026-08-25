@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gtubn Studio 的网站 - 页面跳转确认</title>
+
+  <link rel="icon" href="media/weblogo.png" type="image/png">
+  <link rel="icon" href="media/weblogo.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" sizes="180x180" href="media/weblogo.png">
+  <meta name="apple-mobile-web-app-title" content="Gtubn Studio">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <!-- 本地图标库引用 -->
+  <link rel="stylesheet" href="./assets/css/material-symbols.css">
+
+  <script>
+    (function() {
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+      }
+
+      const savedTheme = getCookie('theme');
+      const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+
+      if (savedTheme === 'light' || (!savedTheme && systemPrefersLight)) {
+        document.documentElement.classList.add('light-mode');
+      }
+    })();
+  </script>
+
+  <style>
+    :root {
+      --md-sys-color-background: #121316;
+      --md-sys-color-surface: #121316;
+      --md-sys-color-surface-container: #1a1b1f;
+      --md-sys-color-surface-container-high: #202125;
+      --md-sys-color-on-surface: #e2e2e6;
+      --md-sys-color-on-surface-variant: #c4c6cf;
+      --md-sys-color-outline: #44474f;
+
+      --md-sys-color-primary: #e5a93c;
+      --md-sys-color-primary-container: rgba(229, 169, 60, 0.16);
+
+      --md-shape-corner-full: 9999px;
+      --md-shape-corner-large: 16px;
+      --md-shape-corner-medium: 12px;
+
+      --md-easing: cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    html.light-mode {
+      --md-sys-color-background: #fbf7f0;
+      --md-sys-color-surface: #fbf7f0;
+      --md-sys-color-surface-container: #f3ece0;
+      --md-sys-color-surface-container-high: #eae1d0;
+      --md-sys-color-on-surface: #1c1b1e;
+      --md-sys-color-on-surface-variant: #49454f;
+      --md-sys-color-outline: #c8bdab;
+
+      --md-sys-color-primary: #e5a93c;
+      --md-sys-color-primary-container: rgba(138, 90, 0, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--md-sys-color-background);
+      color: var(--md-sys-color-on-surface);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      transition: background-color 0.3s var(--md-easing), color 0.3s var(--md-easing);
+    }
+
+    /* 水波纹效果 */
+    .ripple-surface {
+      position: relative !important;
+      overflow: hidden !important;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.15);
+      transform: scale(0);
+      animation: ripple-anim 1000ms var(--md-easing) forwards;
+      pointer-events: none;
+      will-change: transform, opacity;
+      z-index: 1;
+    }
+
+    html.light-mode .ripple {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    @keyframes ripple-anim {
+      to {
+        transform: scale(3.5);
+        opacity: 0;
+      }
+    }
+
+    /* MD3 提示弹窗卡片 */
+    .turn-card {
+      width: 100%;
+      max-width: 480px;
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--md-shape-corner-large);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .turn-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--md-sys-color-primary);
+    }
+
+    .turn-header .material-symbols-outlined {
+      font-size: 28px;
+    }
+
+    .turn-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .turn-body {
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .target-box {
+      margin-top: 10px;
+      padding: 12px;
+      background-color: var(--md-sys-color-surface-container-high);
+      border: 1px dashed var(--md-sys-color-outline);
+      border-radius: var(--md-shape-corner-medium);
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 0.875rem;
+      color: var(--md-sys-color-primary);
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .turn-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .btn {
+      height: 40px;
+      padding: 0 20px;
+      border-radius: var(--md-shape-corner-full);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    .btn-outlined {
+      background: transparent;
+      border: 1px solid var(--md-sys-color-outline);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .btn-outlined:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.light-mode .btn-outlined:hover {
+      background-color: rgba(0, 0, 0, 0.06);
+    }
+
+    .btn-filled {
+      background-color: var(--md-sys-color-primary);
+      color: #121316;
+    }
+
+    .btn-filled:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="turn-card">
+    <div class="turn-header">
+      <span class="material-symbols-outlined">open_in_new</span>
+      <h2 class="turn-title">即将离开 Gtubn Studio 的网站</h2>
+    </div>
+
+    <div class="turn-body">
+      您即将访问外部第三方网站。请注意您的账号与财产安全。
+      <div class="target-box" id="targetUrlDisplay">正在获取目标网址...</div>
+    </div>
+
+    <div class="turn-actions">
+      <button class="btn btn-outlined ripple-surface" id="cancelBtn">返回主页</button>
+      <button class="btn btn-filled ripple-surface" id="confirmBtn">继续前往</button>
+    </div>
+  </div>
+
+  <script>
+    // 解析 Query 参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUrl = urlParams.get('target');
+
+    const targetDisplay = document.getElementById('targetUrlDisplay');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    if (targetUrl) {
+      targetDisplay.textContent = targetUrl;
+    } else {
+      targetDisplay.textContent = "未指定目标网址";
+      confirmBtn.disabled = true;
+      confirmBtn.style.opacity = "0.5";
+      confirmBtn.style.cursor = "not-allowed";
+    }
+
+    // 延时执行逻辑，配合 300ms 水波纹展示
+    confirmBtn.addEventListener('click', () => {
+      if (targetUrl) {
+        setTimeout(() => {
+          window.location.href = targetUrl;
+        }, 300);
+      }
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      setTimeout(() => {
+        if (document.referrer) {
+          window.history.back();
+        } else {
+          window.location.href = './home.html';
+        }
+      }, 300);
+    });
+
+    // 全局水波纹交互效果
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('.ripple-surface');
+      if (!target) return;
+
+      const circle = document.createElement('span');
+      const diameter = Math.max(target.clientWidth, target.clientHeight);
+      const radius = diameter / 2;
+      const rect = target.getBoundingClientRect();
+
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${e.clientX - rect.left - radius}px`;
+      circle.style.top = `${e.clientY - rect.top - radius}px`;
+      circle.className = 'ripple';
+
+      target.appendChild(circle);
+
+      setTimeout(() => circle.remove(), 1000);
+    });
+  </script>
+
+</body>
+</html>
