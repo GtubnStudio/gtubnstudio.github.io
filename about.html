@@ -163,7 +163,7 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
 
     .about-logo {
@@ -261,6 +261,110 @@
       font-size: 0.8125rem;
       color: var(--md-sys-color-on-surface-variant);
       line-height: 1.3;
+    }
+
+    .members-grid {
+      width: 100%;
+      display: flex;
+      gap: 12px;
+    }
+
+    .member-card {
+      flex: 1;
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--md-shape-corner-large);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .member-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--md-shape-corner-full);
+      background-color: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .member-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .member-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .member-role {
+      font-size: 0.75rem;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .join-card {
+      width: 100%;
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--md-shape-corner-large);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .join-cantonese {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      font-weight: 500;
+      color: var(--md-sys-color-primary);
+      background-color: var(--md-sys-color-primary-container);
+      padding: 14px 18px;
+      border-radius: var(--md-shape-corner-medium);
+      border-left: 4px solid var(--md-sys-color-primary);
+    }
+
+    .join-desc {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .join-roles-list {
+      list-style: none;
+      font-size: 0.85rem;
+      color: var(--md-sys-color-on-surface-variant);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .join-roles-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .join-roles-list .material-symbols-outlined {
+      font-size: 18px;
+      color: var(--md-sys-color-primary);
+    }
+
+    .join-contact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      padding-top: 8px;
+      border-top: 1px solid var(--md-sys-color-outline);
     }
 
     .social-btn-group {
@@ -401,6 +505,22 @@
     .drawer-item.active .material-symbols-outlined {
       font-variation-settings: 'FILL' 1;
     }
+
+    .link-email {
+      color: var(--md-sys-color-primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .link-email:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      .members-grid {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
@@ -456,7 +576,11 @@
       <p class="about-copyright">© 2026 Gtubn Studio, All Rights Reserved.</p>
     </div>
 
-    <!-- 站点主体信息 -->
+    <!-- 网站基本信息 -->
+    <div class="section-title">
+      <span class="material-symbols-outlined">dns</span>
+      <span>网站基本信息</span>
+    </div>
     <div class="info-card">
       <div class="info-item">
         <span class="info-label">Web 主办：</span> Gtubn Studio 总理部
@@ -504,6 +628,61 @@
       <a href="./turnsite.html?target=https://space.bilibili.com/3546678657289013" class="social-btn ripple-surface">
         哔哩哔哩（粤区）
       </a>
+    </div>
+
+    <!-- 组织成员 -->
+    <div class="section-title">
+      <span class="material-symbols-outlined">group</span>
+      <span>组织成员</span>
+    </div>
+    <div class="members-grid">
+      <div class="member-card ripple-surface">
+        <div class="member-avatar">G</div>
+        <div class="member-info">
+          <span class="member-name">Gtubn Liang</span>
+          <span class="member-role">组织核心成员</span>
+        </div>
+      </div>
+      <div class="member-card ripple-surface">
+        <div class="member-avatar">.</div>
+        <div class="member-info">
+          <span class="member-name">.</span>
+          <span class="member-role">组织核心成员</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加入我们 -->
+    <div class="section-title">
+      <span class="material-symbols-outlined">person_add</span>
+      <span>加入我们</span>
+    </div>
+    <div class="join-card">
+      <div class="join-cantonese">
+        有兴趣就入嚟交流交流、一齐探讨啦！不论你想搞技术定系做内容，只要钟意折腾，Gtubn Studio 都随时欢迎你！
+      </div>
+      <p class="join-desc">
+        我们是一个充满活力且不断探索新技术的组织。如果你对以下方向感兴趣，欢迎联系我们：
+      </p>
+      <ul class="join-roles-list">
+        <li>
+          <span class="material-symbols-outlined">check_circle</span>
+          <span>Web 前端开发与 UI/UX 界面设计</span>
+        </li>
+        <li>
+          <span class="material-symbols-outlined">check_circle</span>
+          <span>开源项目部署、工具维护与资源整理</span>
+        </li>
+        <li>
+          <span class="material-symbols-outlined">check_circle</span>
+          <span>媒体内容创作、视频剪辑与宣发</span>
+        </li>
+      </ul>
+      <div class="join-contact">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: var(--md-sys-color-primary);">mail</span>
+        <span>联络邮箱：</span>
+        <a href="mailto:wf1937@outlook.com" class="link-email">wf1937@outlook.com</a>
+      </div>
     </div>
   </main>
 
