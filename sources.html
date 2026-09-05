@@ -82,15 +82,15 @@
     .ripple {
       position: absolute;
       border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.22);
+      background-color: rgba(255, 255, 255, 0.15);
       transform: scale(0);
-      animation: ripple-anim 800ms var(--md-easing) forwards;
+      animation: ripple-anim 1000ms var(--md-easing) forwards;
       pointer-events: none;
       will-change: transform, opacity;
     }
 
     html.light-mode .ripple {
-      background-color: rgba(0, 0, 0, 0.15);
+      background-color: rgba(0, 0, 0, 0.1);
     }
 
     @keyframes ripple-anim {
@@ -226,15 +226,11 @@
       gap: 6px;
       justify-content: center;
       cursor: pointer;
-      transition: background-color 0.2s var(--md-easing), transform 0.15s var(--md-easing);
+      transition: background-color 0.2s var(--md-easing);
     }
 
     .btn-detail:hover {
       background-color: var(--md-sys-color-primary-container);
-    }
-
-    .btn-detail:active {
-      transform: scale(0.94);
     }
 
     .disclaimer-card {
@@ -468,8 +464,7 @@
       align-items: center;
       justify-content: center;
       transition: background-color 0.2s var(--md-easing), 
-                  border-color 0.2s var(--md-easing), 
-                  transform 0.15s var(--md-easing);
+                  border-color 0.2s var(--md-easing);
     }
 
     .btn-done:hover {
@@ -484,7 +479,6 @@
     }
 
     .btn-done:active {
-      transform: scale(0.95);
       color: var(--md-sys-color-on-surface);
     }
 
@@ -661,7 +655,22 @@
       <span>软件与工具下载</span>
     </div>
 
-    <!-- 应用条目 -->
+    <!-- 应用条目：Gtubnmium -->
+    <div class="app-item-card">
+      <div class="app-item-left">
+        <img src="media/Gtubnmium.png" alt="Gtubnmium" class="app-item-icon">
+        <div class="app-item-info">
+          <h3>Gtubn Studio 网站客户端（Gtubnmium）</h3>
+          <p>基于 Electron 打造的 Gtubn Studio 专用桌面客户端安装程序</p>
+        </div>
+      </div>
+      <button class="btn-detail ripple-surface" onclick="openAppDetail('gtubnmium')">
+        <span class="material-symbols-outlined" style="font-size: 18px;">info</span>
+        <span>详情</span>
+      </button>
+    </div>
+
+    <!-- 应用条目：创建 Windows To Go 工作区 -->
     <div class="app-item-card">
       <div class="app-item-left">
         <img src="media/CaWTGwS.png" alt="创建 Windows To Go 工作区" class="app-item-icon">
@@ -741,6 +750,19 @@
   <script>
     // 1. 应用详情数据库
     const APPS_DATA = {
+      'gtubnmium': {
+        title: 'Gtubn Studio 网站客户端（Gtubnmium）',
+        subTitle: 'Gtubn Studio 网站客户端',
+        icon: 'media/Gtubnmium.png',
+        downloadUrl: 'sources/Gtubnmium.zip',
+        type: '桌面应用与客户端',
+        system: 'Windows 10 / 11 64位操作系统',
+        source: 'Gtubn Studio 官方自主开发',
+        description: [
+          'Gtubnmium 是由 Gtubn Studio 倾力打造的官方网站专用桌面客户端。项目基于 Electron 框架构建，专为提升 Web 端的桌面化沉浸体验而设计。',
+          '客户端深度集成了无边框现代窗口、自定义导航顶栏以及单实例运行控制功能。同时，软件内嵌入了原生关于信息弹窗、外置默认浏览器跳转及缓存动态清理机制，为您带来更流畅、更安全且契合原生 Windows 风格的专属浏览体验。'
+        ]
+      },
       'cawtgws': {
         title: '创建 Windows To Go 工作区',
         subTitle: 'Windows 系统原生便携式部署工具',
@@ -840,7 +862,7 @@
       }
     });
 
-    // 5. 水波纹点击特效
+    // 5. 水波纹点击特效（参照 home.html 修复页面跳转）
     document.addEventListener('click', (e) => {
       const target = e.target.closest('.ripple-surface');
       if (!target) return;
@@ -857,7 +879,16 @@
 
       target.appendChild(circle);
 
-      setTimeout(() => circle.remove(), 800);
+      setTimeout(() => circle.remove(), 1000);
+
+      const link = target.closest('a');
+      if (link && link.href && !link.target && !link.href.startsWith('javascript:')) {
+        e.preventDefault();
+        const href = link.href;
+        setTimeout(() => {
+          window.location.href = href;
+        }, 300);
+      }
     });
   </script>
 
