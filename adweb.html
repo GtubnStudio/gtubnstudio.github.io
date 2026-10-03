@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gtubn Studio - 官方展览宣传</title>
+    <style>
+        :root {
+            --g-blue: #4285F4;
+            --g-red: #EA4335;
+            --g-yellow: #FBBC05;
+            --g-green: #34A853;
+            --bg-dark: #050608;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-sub: #9aa0a6;
+            --accent-gold: #f2c97d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-main);
+            perspective: 1400px;
+        }
+
+        /* 增强的动态背景光晕与流动光带 */
+        .ambient-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+            filter: blur(100px);
+            opacity: 0.7;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            mix-blend-mode: screen;
+            filter: blur(30px);
+            will-change: transform;
+        }
+
+        .orb-1 { 
+            width: 600px; height: 600px; background: var(--g-blue); 
+            top: -10%; left: -10%; 
+            animation: orbMove1 16s infinite alternate ease-in-out; 
+        }
+        .orb-2 { 
+            width: 550px; height: 550px; background: var(--g-red); 
+            bottom: -10%; right: -10%; 
+            animation: orbMove2 18s infinite alternate ease-in-out; 
+        }
+        .orb-3 { 
+            width: 500px; height: 500px; background: var(--g-yellow); 
+            top: 30%; left: 60%; 
+            animation: orbMove3 14s infinite alternate ease-in-out; 
+        }
+        .orb-4 { 
+            width: 520px; height: 520px; background: var(--g-green); 
+            bottom: 20%; left: -15%; 
+            animation: orbMove4 20s infinite alternate ease-in-out; 
+        }
+
+        @keyframes orbMove1 {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(120px, 80px) scale(1.15); }
+            100% { transform: translate(-60px, 140px) scale(0.95); }
+        }
+
+        @keyframes orbMove2 {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(-140px, -90px) scale(1.2); }
+            100% { transform: translate(80px, -150px) scale(0.9); }
+        }
+
+        @keyframes orbMove3 {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(-100px, 120px) scale(1.1); }
+            100% { transform: translate(120px, -80px) scale(1.05); }
+        }
+
+        @keyframes orbMove4 {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(150px, -70px) scale(0.95); }
+            100% { transform: translate(-90px, 110px) scale(1.25); }
+        }
+
+        /* 背景网格与扫描光线 */
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            transform: perspective(600px) rotateX(60deg) scale(2.2);
+            transform-origin: center top;
+            animation: gridPulse 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes gridPulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
+        }
+
+        /* 浮动粒子星光效果 */
+        .particles {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #fff;
+            border-radius: 50%;
+            animation: particleFloat linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes particleFloat {
+            0% { transform: translateY(105vh) translateX(0); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) translateX(50px); opacity: 0; }
+        }
+
+        /* Google风格色条顶栏加动态流动动画 */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            z-index: 20;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 0 12px rgba(66, 133, 244, 0.4);
+        }
+
+        .top-bar div { 
+            flex: 1; 
+            height: 100%; 
+            position: relative;
+        }
+        .bar-blue { background: var(--g-blue); }
+        .bar-red { background: var(--g-red); }
+        .bar-yellow { background: var(--g-yellow); }
+        .bar-green { background: var(--g-green); }
+
+        .top-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+            animation: topBarShine 3s infinite cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes topBarShine {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--g-blue), var(--g-green));
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            box-shadow: 0 0 16px var(--g-blue);
+            animation: badgeGlow 3s infinite alternate;
+        }
+
+        @keyframes badgeGlow {
+            0% { box-shadow: 0 0 8px var(--g-blue); }
+            100% { box-shadow: 0 0 20px var(--g-green), 0 0 10px var(--g-blue); }
+        }
+
+        .logo-text {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #fff, #bbb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .site-link {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            z-index: 20;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--card-border);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-family: monospace;
+            color: var(--accent-gold);
+            backdrop-filter: blur(12px);
+            transform: translateZ(30px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* 场景舞台：加入全自动的 3D 浮动摆动动画，无需鼠标交互 */
+        .stage {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            animation: stageFloat3D 12s ease-in-out infinite alternate;
+        }
+
+        @keyframes stageFloat3D {
+            0% { transform: rotateY(-6deg) rotateX(4deg) translateY(0px); }
+            50% { transform: rotateY(6deg) rotateX(-4deg) translateY(-10px); }
+            100% { transform: rotateY(-6deg) rotateX(4deg) translateY(0px); }
+        }
+
+        /* 场景幻灯片（3D透视切换） */
+        .scene {
+            position: absolute;
+            width: 90%;
+            max-width: 1100px;
+            opacity: 0;
+            transform: scale(0.92) translateZ(-80px) rotateX(8deg);
+            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transform-style: preserve-3d;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+        }
+
+        .scene.active {
+            opacity: 1;
+            transform: scale(1) translateZ(0) rotateX(0deg);
+            pointer-events: auto;
+        }
+
+        /* 场景 1: 开场 */
+        .title-huge {
+            font-size: 5.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, #ffffff 0%, #919191 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transform: translateZ(60px);
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
+            animation: elementFloat 6s ease-in-out infinite alternate;
+        }
+
+        .title-colored {
+            background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.8rem;
+            color: var(--text-sub);
+            font-weight: 400;
+            transform: translateZ(40px);
+        }
+
+        /* 3D 卡片容器网络 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+            width: 100%;
+            margin-top: 30px;
+            transform-style: preserve-3d;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 35px;
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+            transform: translateZ(50px);
+            animation: cardBreath 7s ease-in-out infinite alternate;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: -3.5s;
+        }
+
+        @keyframes cardBreath {
+            0% { transform: translateZ(40px) rotateX(1deg) rotateY(-1deg); box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
+            100% { transform: translateZ(75px) rotateX(-2deg) rotateY(2deg); box-shadow: 0 45px 80px rgba(0,0,0,0.6), 0 0 30px rgba(66,133,244,0.15); border-color: rgba(255,255,255,0.25); }
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--g-blue), var(--g-green));
+        }
+
+        .card-tag {
+            display: inline-block;
+            padding: 5px 14px;
+            background: rgba(242, 201, 125, 0.15);
+            color: var(--accent-gold);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            box-shadow: inset 0 0 10px rgba(242,201,125,0.1);
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .card-desc {
+            font-size: 1.1rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        /* 成员列表 3D 效果 */
+        .member-list {
+            display: flex;
+            gap: 24px;
+            width: 100%;
+            justify-content: center;
+            margin-top: 25px;
+            transform-style: preserve-3d;
+        }
+
+        .member-card {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            backdrop-filter: blur(16px);
+            transform: translateZ(55px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            animation: memberBreath 6s ease-in-out infinite alternate;
+        }
+
+        .member-card:nth-child(2) {
+            animation-delay: -3s;
+        }
+
+        @keyframes memberBreath {
+            0% { transform: translateZ(45px) rotateY(-2deg); }
+            100% { transform: translateZ(75px) rotateY(3deg) translateY(-5px); box-shadow: 0 40px 70px rgba(0,0,0,0.6), 0 0 25px rgba(52,168,83,0.15); }
+        }
+
+        .avatar {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: 900;
+            font-size: 1.4rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transform: translateZ(25px);
+        }
+
+        .member-info {
+            text-align: left;
+        }
+
+        .member-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .member-role {
+            font-size: 0.95rem;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        /* 粤语招募高亮框 3D 效果 */
+        .cantonese-box {
+            background: linear-gradient(135deg, rgba(251, 188, 5, 0.12), rgba(234, 67, 53, 0.12));
+            border: 1px solid rgba(251, 188, 5, 0.35);
+            border-left: 6px solid var(--g-yellow);
+            padding: 30px;
+            border-radius: 18px;
+            font-size: 1.35rem;
+            line-height: 1.75;
+            color: #fff;
+            text-align: left;
+            margin-bottom: 25px;
+            width: 100%;
+            backdrop-filter: blur(16px);
+            transform: translateZ(60px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.45);
+            animation: boxFloat 5s ease-in-out infinite alternate;
+        }
+
+        @keyframes boxFloat {
+            0% { transform: translateZ(50px) rotateX(1deg); }
+            100% { transform: translateZ(75px) rotateX(-2deg); }
+        }
+
+        .recruit-items {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            width: 100%;
+            transform-style: preserve-3d;
+        }
+
+        .recruit-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 22px;
+            border-radius: 16px;
+            font-size: 1rem;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(14px);
+            transform: translateZ(45px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            animation: itemFloat 6s ease-in-out infinite alternate;
+        }
+
+        .recruit-item:nth-child(2) { animation-delay: -2s; }
+        .recruit-item:nth-child(3) { animation-delay: -4s; }
+
+        @keyframes itemFloat {
+            0% { transform: translateZ(35px); }
+            100% { transform: translateZ(65px) translateY(-4px); border-color: rgba(52,168,83,0.4); }
+        }
+
+        .check-icon {
+            color: var(--g-green);
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px rgba(52,168,83,0.5);
+        }
+
+        .contact-email {
+            margin-top: 25px;
+            font-size: 1.2rem;
+            color: var(--g-blue);
+            font-family: monospace;
+            background: rgba(66, 133, 244, 0.12);
+            padding: 12px 30px;
+            border-radius: 30px;
+            border: 1px solid rgba(66, 133, 244, 0.35);
+            transform: translateZ(50px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        /* 底部进度指示器 */
+        .progress-bar-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateZ(40px);
+            display: flex;
+            gap: 12px;
+            z-index: 20;
+        }
+
+        .dot {
+            width: 40px;
+            height: 5px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .dot-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--g-blue), var(--g-green));
+            box-shadow: 0 0 10px var(--g-blue);
+        }
+
+        .dot.active .dot-fill {
+            animation: fillProgress 2.8s linear forwards;
+        }
+
+        @keyframes fillProgress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        /* 响应式支持 */
+        @media (max-width: 768px) {
+            .title-huge { font-size: 3.2rem; }
+            .card-grid, .recruit-items, .member-list { grid-template-columns: 1fr; flex-direction: column; }
+            .site-link { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景光影特效 -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+
+    <div class="grid-overlay"></div>
+
+    <!-- 浮动粒子星光 -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="bar-blue"></div>
+        <div class="bar-red"></div>
+        <div class="bar-yellow"></div>
+        <div class="bar-green"></div>
+    </div>
+
+    <!-- 场景舞台 -->
+    <div class="stage">
+
+        <!-- 场景 1: 开场引入 -->
+        <div class="scene active" data-duration="2800">
+            <div class="title-huge">探索技术与内容的<br><span class="title-colored">无限可能</span></div>
+            <div class="subtitle">Gtubn Studio 官方产品与开源生态展示</div>
+        </div>
+
+        <!-- 场景 2: 软件与工具下载展示 -->
+        <div class="scene" data-duration="3200">
+            <div style="font-size: 1.2rem; color: var(--accent-gold); font-weight: 600; margin-bottom: 10px; transform: translateZ(30px);">核心软件与工具</div>
+            <div style="font-size: 2.8rem; font-weight: 800; margin-bottom: 10px; transform: translateZ(40px);">打造优质高效的桌面体验</div>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <span class="card-tag">专用桌面应用</span>
+                    <div class="card-title">Gtubn Studio 网站客户端 (Gtubnmium)</div>
+                    <div class="card-desc">基于 Electron 打造的 Gtubn Studio 专用桌面客户端安装程序。提供更加稳定安全且定制化的独立操作空间。</div>
+                </div>
+                <div class="card">
+                    <span class="card-tag">系统工具</span>
+                    <div class="card-title">创建 Windows To Go 工作区</div>
+                    <div class="card-desc">在 Windows 10 1909 原生提取的 Windows To Go 工作区安装程序，轻松打造随身携带的便携操作系统。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 场景 3: 关注与频道 & 组织成员 -->
+        <div class="scene" data-duration="3000">
+            <div style="font-size: 1.2rem; color: var(--g-blue); font-weight: 600; margin-bottom: 10px; transform: translateZ(30px);">关注与频道 & 核心团队</div>
+            <div style="font-size: 2.8rem; font-weight: 800; margin-bottom: 20px; transform: translateZ(40px);">跨平台媒体与组织成员</div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 25px; transform: translateZ(35px);">
+                <div style="background: rgba(255,255,255,0.06); border: 1px solid var(--card-border); padding: 12px 30px; border-radius: 30px; font-weight: 600; backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    抖音（粤区）
+                </div>
+                <div style="background: rgba(255,255,255,0.06); border: 1px solid var(--card-border); padding: 12px 30px; border-radius: 30px; font-weight: 600; backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    哔哩哔哩（粤区）
+                </div>
+            </div>
+
+            <div class="member-list">
+                <div class="member-card">
+                    <div class="avatar">GL</div>
+                    <div class="member-info">
+                        <div class="member-name">Gtubn Liang</div>
+                        <div class="member-role">组织核心成员</div>
+                    </div>
+                </div>
+                <div class="member-card">
+                    <div class="avatar" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">J</div>
+                    <div class="member-info">
+                        <div class="member-name">Jiang</div>
+                        <div class="member-role">组织核心成员</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 场景 4: 加入我们 -->
+        <div class="scene" data-duration="3500">
+            <div style="font-size: 1.2rem; color: var(--g-green); font-weight: 600; margin-bottom: 10px; transform: translateZ(30px);">加入我们</div>
+            
+            <div class="cantonese-box">
+                “有兴趣就入嚟交流交流、一齐探讨啦！不论你想搞技术定系做内容，只要钟意折腾，Gtubn Studio 都随时欢迎你！”
+            </div>
+
+            <div class="recruit-items">
+                <div class="recruit-item">
+                    <span class="check-icon">✓</span> Web 前端开发与 UI/UX 界面设计
+                </div>
+                <div class="recruit-item">
+                    <span class="check-icon">✓</span> 开源项目部署、工具维护与资源整理
+                </div>
+                <div class="recruit-item">
+                    <span class="check-icon">✓</span> 媒体内容创作、视频剪辑与宣发
+                </div>
+            </div>
+
+            <div class="contact-email">
+                联络邮箱：wf1937@outlook.com
+            </div>
+        </div>
+
+        <!-- 场景 5: 结尾升华 -->
+        <div class="scene" data-duration="2500">
+            <div class="title-huge" style="font-size: 4.5rem;">Gtubn Studio</div>
+            <div class="subtitle" style="color: #fff; font-size: 2rem;">充满活力且不断探索新技术的组织</div>
+            <div style="margin-top: 30px; font-family: monospace; color: var(--accent-gold); font-size: 1.3rem; transform: translateZ(40px);">
+                https://gtubnstudio.github.io
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 底部自动播放指示条 -->
+    <div class="progress-bar-container">
+        <div class="dot active"><div class="dot-fill"></div></div>
+        <div class="dot"><div class="dot-fill"></div></div>
+        <div class="dot"><div class="dot-fill"></div></div>
+        <div class="dot"><div class="dot-fill"></div></div>
+        <div class="dot"><div class="dot-fill"></div></div>
+    </div>
+
+    <script>
+        // 动态生成粒子
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 35;
+        for (let i = 0; i < particleCount; i++) {
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            p.style.left = `${Math.random() * 100}%`;
+            p.style.animationDuration = `${6 + Math.random() * 8}s`;
+            p.style.animationDelay = `${Math.random() * 5}s`;
+            p.style.width = `${2 + Math.random() * 2}px`;
+            p.style.height = p.style.width;
+            particlesContainer.appendChild(p);
+        }
+
+        const scenes = document.querySelectorAll('.scene');
+        const dots = document.querySelectorAll('.dot');
+        let currentIndex = 0;
+        let timer = null;
+
+        function showScene(index) {
+            scenes.forEach((scene, i) => {
+                scene.classList.toggle('active', i === index);
+            });
+
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+
+            const duration = parseInt(scenes[index].getAttribute('data-duration')) || 3000;
+
+            if (timer) clearTimeout(timer);
+
+            timer = setTimeout(() => {
+                currentIndex = (currentIndex + 1) % scenes.length;
+                showScene(currentIndex);
+            }, duration);
+        }
+
+        // 启动纯自动循环播放
+        showScene(0);
+    </script>
+</body>
+</html>
