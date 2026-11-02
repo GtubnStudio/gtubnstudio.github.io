@@ -4,15 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gtubn Studio 的网站 - 主页</title>
-
   <link rel="icon" href="media/weblogo.png" type="image/png">
   <link rel="icon" href="media/weblogo.ico" type="image/x-icon">
   <link rel="apple-touch-icon" sizes="180x180" href="media/weblogo.png">
   <meta name="apple-mobile-web-app-title" content="Gtubn Studio">
   <meta name="apple-mobile-web-app-capable" content="yes">
-
   <link rel="stylesheet" href="./assets/css/material-symbols.css">
-
   <script>
     (function() {
       const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -21,7 +18,6 @@
       }
     })();
   </script>
-
   <style>
     :root {
       --md-sys-color-background: #121316;
@@ -31,17 +27,13 @@
       --md-sys-color-on-surface: #e2e2e6;
       --md-sys-color-on-surface-variant: #c4c6cf;
       --md-sys-color-outline: #44474f;
-
       --md-sys-color-primary: #e5a93c;
       --md-sys-color-primary-container: rgba(229, 169, 60, 0.16);
-
       --md-shape-corner-full: 9999px;
       --md-shape-corner-large: 16px;
       --md-shape-corner-medium: 12px;
-
       --md-easing: cubic-bezier(0.2, 0, 0, 1);
     }
-
     html.light-mode {
       --md-sys-color-background: #fbf7f0;
       --md-sys-color-surface: #fbf7f0;
@@ -50,17 +42,14 @@
       --md-sys-color-on-surface: #1c1b1e;
       --md-sys-color-on-surface-variant: #49454f;
       --md-sys-color-outline: #c8bdab;
-
       --md-sys-color-primary: #e5a93c;
       --md-sys-color-primary-container: rgba(138, 90, 0, 0.12);
     }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--md-sys-color-background);
@@ -69,14 +58,12 @@
       overflow-x: hidden;
       transition: background-color 0.3s var(--md-easing), color 0.3s var(--md-easing);
     }
-
     .ripple-surface {
       position: relative;
       overflow: hidden;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
-
     .ripple {
       position: absolute;
       border-radius: 50%;
@@ -86,18 +73,15 @@
       pointer-events: none;
       will-change: transform, opacity;
     }
-
     html.light-mode .ripple {
       background-color: rgba(0, 0, 0, 0.1);
     }
-
     @keyframes ripple-anim {
       to {
         transform: scale(3.5);
         opacity: 0;
       }
     }
-
     .top-app-bar {
       height: 64px;
       background-color: var(--md-sys-color-surface);
@@ -111,13 +95,11 @@
       z-index: 10;
       transition: background-color 0.3s, border-color 0.3s;
     }
-
     .app-bar-left {
       display: flex;
       align-items: center;
       gap: 16px;
     }
-
     .icon-btn {
       width: 40px;
       height: 40px;
@@ -130,15 +112,12 @@
       justify-content: center;
       transition: background-color 0.2s, color 0.2s;
     }
-
     .icon-btn:hover {
       background-color: rgba(255, 255, 255, 0.08);
     }
-
     html.light-mode .icon-btn:hover {
       background-color: rgba(0, 0, 0, 0.06);
     }
-
     .brand {
       display: flex;
       align-items: center;
@@ -147,29 +126,24 @@
       font-weight: 500;
       user-select: none;
     }
-
     .main-container {
       max-width: 960px;
       margin: 0 auto;
       padding: 24px 16px 40px;
     }
-
     .hero-section {
       margin-bottom: 32px;
     }
-
     .hero-title {
       font-size: 1.75rem;
       font-weight: 700;
       line-height: 1.25;
       margin-bottom: 8px;
     }
-
     .hero-subtitle {
       color: var(--md-sys-color-on-surface-variant);
       font-size: 0.95rem;
     }
-
     .search-card {
       background-color: var(--md-sys-color-surface-container);
       border: 1px solid var(--md-sys-color-outline);
@@ -180,12 +154,10 @@
       gap: 12px;
       transition: border-color 0.2s, background-color 0.2s;
     }
-
     .search-card:focus-within, .search-card:hover {
       border-color: var(--md-sys-color-primary);
       background-color: var(--md-sys-color-surface-container-high);
     }
-
     .search-card-header {
       display: flex;
       align-items: center;
@@ -194,7 +166,6 @@
       font-weight: 500;
       color: var(--md-sys-color-on-surface);
     }
-
     .search-input-box {
       display: flex;
       align-items: center;
@@ -206,11 +177,9 @@
       height: 48px;
       transition: background-color 0.3s, border-color 0.3s;
     }
-
     .search-input-box:focus-within {
       border-color: var(--md-sys-color-primary);
     }
-
     .engine-select {
       background: transparent;
       border: none;
@@ -221,12 +190,10 @@
       cursor: pointer;
       padding-right: 4px;
     }
-
     .engine-select option {
       background-color: var(--md-sys-color-surface-container-high);
       color: var(--md-sys-color-on-surface);
     }
-
     .search-input {
       width: 100%;
       background: transparent;
@@ -235,11 +202,9 @@
       color: var(--md-sys-color-on-surface);
       font-size: 0.9375rem;
     }
-
     .search-input::placeholder {
       color: var(--md-sys-color-on-surface-variant);
     }
-
     .search-submit-btn {
       border: none;
       background: transparent;
@@ -251,7 +216,6 @@
       padding: 6px;
       border-radius: 50%;
     }
-
     .drawer-scrim {
       position: fixed;
       inset: 0;
@@ -261,12 +225,10 @@
       transition: opacity 0.4s var(--md-easing), visibility 0.4s var(--md-easing);
       z-index: 20;
     }
-
     .drawer-scrim.open {
       opacity: 1;
       visibility: visible;
     }
-
     .drawer {
       position: fixed;
       top: 0;
@@ -284,11 +246,9 @@
       border-bottom-right-radius: var(--md-shape-corner-large);
       will-change: transform;
     }
-
     .drawer.open {
       transform: translateX(0);
     }
-
     .drawer-header {
       height: 64px;
       padding: 0 16px;
@@ -297,7 +257,6 @@
       border-bottom: 1px solid var(--md-sys-color-outline);
       margin: -12px -12px 12px -12px;
     }
-
     .drawer-footer {
       padding: 16px;
       border-top: 1px solid var(--md-sys-color-outline);
@@ -307,7 +266,6 @@
       color: var(--md-sys-color-on-surface-variant);
       opacity: 0.8;
     }
-
     .drawer-title {
       display: flex;
       align-items: center;
@@ -315,7 +273,6 @@
       font-size: 1.25rem;
       font-weight: 500;
     }
-
     .drawer-item {
       display: flex;
       align-items: center;
@@ -335,32 +292,25 @@
                   transform 0.4s var(--md-easing), 
                   opacity 0.4s var(--md-easing);
     }
-
     .drawer.open .drawer-item {
       opacity: 1;
       transform: translateX(0);
       transition-delay: calc(0.04s * var(--idx) + 0.08s);
     }
-
     .drawer-item:hover {
       background-color: rgba(255, 255, 255, 0.08);
       color: var(--md-sys-color-on-surface);
     }
-
     html.light-mode .drawer-item:hover {
       background-color: rgba(0, 0, 0, 0.06);
     }
-
     .drawer-item.active {
       background-color: var(--md-sys-color-primary-container);
       color: var(--md-sys-color-primary);
     }
-
     .drawer-item .material-symbols-outlined {
       font-size: 24px;
     }
-
-
     .countdown-card {
       background-color: var(--md-sys-color-surface-container);
       border: 1px solid var(--md-sys-color-outline);
@@ -371,12 +321,10 @@
       gap: 14px;
       transition: border-color 0.2s, background-color 0.2s;
     }
-
     .countdown-card:hover {
       border-color: var(--md-sys-color-primary);
       background-color: var(--md-sys-color-surface-container-high);
     }
-
     .countdown-card-header {
       display: flex;
       align-items: center;
@@ -385,7 +333,6 @@
       font-weight: 500;
       color: var(--md-sys-color-on-surface);
     }
-
     .countdown-time {
       display: flex;
       align-items: center;
@@ -393,7 +340,6 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-
     .cd-seg {
       display: flex;
       flex-direction: column;
@@ -405,7 +351,6 @@
       border: 1px solid var(--md-sys-color-outline);
       border-radius: var(--md-shape-corner-medium);
     }
-
     .cd-value {
       font-size: 1.75rem;
       font-weight: 700;
@@ -413,18 +358,15 @@
       color: var(--md-sys-color-primary);
       line-height: 1;
     }
-
     .cd-label {
       font-size: 0.75rem;
       color: var(--md-sys-color-on-surface-variant);
     }
-
     .cd-colon {
       font-size: 1.75rem;
       font-weight: 700;
       color: var(--md-sys-color-on-surface-variant);
     }
-
     .countdown-caption {
       text-align: center;
       color: var(--md-sys-color-on-surface-variant);
@@ -433,7 +375,6 @@
   </style>
 </head>
 <body>
-
   <!-- Top App Bar -->
   <header class="top-app-bar">
     <div class="app-bar-left">
@@ -444,12 +385,10 @@
         <span>Gtubn Studio 的网站 - 主页</span>
       </div>
     </div>
-
     <button class="icon-btn ripple-surface" id="themeToggleBtn" aria-label="切换明暗主题">
       <span class="material-symbols-outlined" id="themeIcon">light_mode</span>
     </button>
   </header>
-
   <!-- Navigation Drawer -->
   <div class="drawer-scrim" id="drawerScrim"></div>
   <nav class="drawer" id="drawer">
@@ -458,7 +397,6 @@
         <span>Gtubn Studio 的网站</span>
       </div>
     </div>
-
     <a href="./home.html" class="drawer-item active ripple-surface" style="--idx: 1;">
       <span class="material-symbols-outlined">home</span>
       <span>主页</span>
@@ -471,19 +409,16 @@
       <span class="material-symbols-outlined">info</span>
       <span>关于</span>
     </a>
-
     <div class="drawer-footer">
       <p>For testing only. This is currently a BETA version and may contain bugs.</p>
     </div>
   </nav>
-
   <!-- 主页面内容区域 -->
   <main class="main-container">
     <section class="hero-section">
       <h1 class="hero-title">欢迎来到 Gtubn Studio 的网站！</h1>
       <p class="hero-subtitle">海内存知己，天涯若比邻。</p>
     </section>
-
     <section>
       <div class="search-card">
         <div class="search-card-header">
@@ -502,8 +437,7 @@
         </form>
       </div>
     </section>
-
-    <section>
+    <section style="margin-top:20px;">
       <div class="countdown-card">
         <div class="countdown-card-header">
           <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary);">hourglass_bottom</span>
@@ -522,24 +456,19 @@
       </div>
     </section>
   </main>
-
   <script>
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const themeIcon = document.getElementById('themeIcon');
     const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: light)');
-
     const updateThemeIcon = () => {
       const isLight = document.documentElement.classList.contains('light-mode');
       themeIcon.textContent = isLight ? 'dark_mode' : 'light_mode';
     };
-
     updateThemeIcon();
-
     themeToggleBtn.addEventListener('click', () => {
       document.documentElement.classList.toggle('light-mode');
       updateThemeIcon();
     });
-
     colorSchemeQuery.addEventListener('change', (e) => {
       if (e.matches) {
         document.documentElement.classList.add('light-mode');
@@ -548,21 +477,16 @@
       }
       updateThemeIcon();
     });
-
     const drawer = document.getElementById('drawer');
     const drawerScrim = document.getElementById('drawerScrim');
-
     const toggleDrawer = () => {
       const isOpen = drawer.classList.toggle('open');
       drawerScrim.classList.toggle('open', isOpen);
     };
-
     document.getElementById('menuBtn').addEventListener('click', toggleDrawer);
     drawerScrim.addEventListener('click', toggleDrawer);
-
     const searchForm = document.getElementById('unifiedSearchForm');
     const engineSelect = document.getElementById('engineSelect');
-
     engineSelect.addEventListener('change', (e) => {
       if (e.target.value === 'bing') {
         searchForm.action = 'https://www.bing.com/search';
@@ -570,25 +494,19 @@
         searchForm.action = 'https://www.google.com/search';
       }
     });
-
     document.addEventListener('click', (e) => {
       const target = e.target.closest('.ripple-surface');
       if (!target) return;
-
       const circle = document.createElement('span');
       const diameter = Math.max(target.clientWidth, target.clientHeight);
       const radius = diameter / 2;
       const rect = target.getBoundingClientRect();
-
       circle.style.width = circle.style.height = `${diameter}px`;
       circle.style.left = `${e.clientX - rect.left - radius}px`;
       circle.style.top = `${e.clientY - rect.top - radius}px`;
       circle.className = 'ripple';
-
       target.appendChild(circle);
-
       setTimeout(() => circle.remove(), 1000);
-
       const link = target.closest('a');
       if (link && link.href && !link.target && !link.href.startsWith('javascript:')) {
         e.preventDefault();
@@ -598,7 +516,6 @@
         }, 300);
       }
     });
-
     // ===== 2027-01-01 倒计时 / 距今计时 =====
     const countdownTarget = new Date('2027-01-01T00:00:00').getTime();
     const cdDaysEl = document.getElementById('cdDays');
@@ -606,7 +523,6 @@
     const cdMinutesEl = document.getElementById('cdMinutes');
     const cdSecondsEl = document.getElementById('cdSeconds');
     const countdownTitleEl = document.getElementById('countdownTitle');
-
     const updateCountdown = () => {
       const now = Date.now();
       const past = now >= countdownTarget;
@@ -621,10 +537,8 @@
       cdSecondsEl.textContent = String(seconds).padStart(2, '0');
       countdownTitleEl.textContent = past ? '2027 年 1 月 1 日至今' : '距离 2027 年 1 月 1 日';
     };
-
     updateCountdown();
     setInterval(updateCountdown, 1000);
   </script>
-
 </body>
 </html>
