@@ -512,9 +512,9 @@
         <div class="notification-content">
           <h2 class="notification-title">项目开源通知：Windows Sub Environment of Web</h2>
           <p class="notification-description">
-            Windows Sub Environment of Web 现已开源！欢迎访问项目页面，了解项目内容并查看相关资源。
+            Windows Sub Environment of Web 现已开源！
           </p>
-          <a class="notification-link ripple-surface" href="/wsew/index.html">
+          <a class="notification-link ripple-surface" href="gtubnstudio.github.io/wsew/index.html">
             查看项目
             <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
           </a>
